@@ -1,0 +1,161 @@
+// File generated from our OpenAPI spec by Stainless.
+
+package com.zavudev.api.services.async.subaccounts
+
+import com.zavudev.api.core.ClientOptions
+import com.zavudev.api.core.RequestOptions
+import com.zavudev.api.core.checkRequired
+import com.zavudev.api.core.handlers.emptyHandler
+import com.zavudev.api.core.handlers.errorBodyHandler
+import com.zavudev.api.core.handlers.errorHandler
+import com.zavudev.api.core.handlers.jsonHandler
+import com.zavudev.api.core.http.HttpMethod
+import com.zavudev.api.core.http.HttpRequest
+import com.zavudev.api.core.http.HttpResponse
+import com.zavudev.api.core.http.HttpResponse.Handler
+import com.zavudev.api.core.http.HttpResponseFor
+import com.zavudev.api.core.http.json
+import com.zavudev.api.core.http.parseable
+import com.zavudev.api.core.prepareAsync
+import com.zavudev.api.models.subaccounts.apikeys.ApiKeyCreateParams
+import com.zavudev.api.models.subaccounts.apikeys.ApiKeyCreateResponse
+import com.zavudev.api.models.subaccounts.apikeys.ApiKeyListParams
+import com.zavudev.api.models.subaccounts.apikeys.ApiKeyListResponse
+import com.zavudev.api.models.subaccounts.apikeys.ApiKeyRevokeParams
+
+class ApiKeyServiceAsyncImpl internal constructor(private val clientOptions: ClientOptions) :
+    ApiKeyServiceAsync {
+
+    private val withRawResponse: ApiKeyServiceAsync.WithRawResponse by lazy {
+        WithRawResponseImpl(clientOptions)
+    }
+
+    override fun withRawResponse(): ApiKeyServiceAsync.WithRawResponse = withRawResponse
+
+    override fun withOptions(modifier: (ClientOptions.Builder) -> Unit): ApiKeyServiceAsync =
+        ApiKeyServiceAsyncImpl(clientOptions.toBuilder().apply(modifier).build())
+
+    override suspend fun create(
+        params: ApiKeyCreateParams,
+        requestOptions: RequestOptions,
+    ): ApiKeyCreateResponse =
+        // post /v1/sub-accounts/{id}/api-keys
+        withRawResponse().create(params, requestOptions).parse()
+
+    override suspend fun list(
+        params: ApiKeyListParams,
+        requestOptions: RequestOptions,
+    ): ApiKeyListResponse =
+        // get /v1/sub-accounts/{id}/api-keys
+        withRawResponse().list(params, requestOptions).parse()
+
+    override suspend fun revoke(params: ApiKeyRevokeParams, requestOptions: RequestOptions) {
+        // delete /v1/sub-accounts/{id}/api-keys/{keyId}
+        withRawResponse().revoke(params, requestOptions)
+    }
+
+    class WithRawResponseImpl internal constructor(private val clientOptions: ClientOptions) :
+        ApiKeyServiceAsync.WithRawResponse {
+
+        private val errorHandler: Handler<HttpResponse> =
+            errorHandler(errorBodyHandler(clientOptions.jsonMapper))
+
+        override fun withOptions(
+            modifier: (ClientOptions.Builder) -> Unit
+        ): ApiKeyServiceAsync.WithRawResponse =
+            ApiKeyServiceAsyncImpl.WithRawResponseImpl(
+                clientOptions.toBuilder().apply(modifier).build()
+            )
+
+        private val createHandler: Handler<ApiKeyCreateResponse> =
+            jsonHandler<ApiKeyCreateResponse>(clientOptions.jsonMapper)
+
+        override suspend fun create(
+            params: ApiKeyCreateParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<ApiKeyCreateResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("id", params.id())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.POST)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "sub-accounts", params._pathParam(0), "api-keys")
+                    .body(json(clientOptions.jsonMapper, params._body()))
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.executeAsync(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { createHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
+            }
+        }
+
+        private val listHandler: Handler<ApiKeyListResponse> =
+            jsonHandler<ApiKeyListResponse>(clientOptions.jsonMapper)
+
+        override suspend fun list(
+            params: ApiKeyListParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<ApiKeyListResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("id", params.id())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "sub-accounts", params._pathParam(0), "api-keys")
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.executeAsync(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { listHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
+            }
+        }
+
+        private val revokeHandler: Handler<Void?> = emptyHandler()
+
+        override suspend fun revoke(
+            params: ApiKeyRevokeParams,
+            requestOptions: RequestOptions,
+        ): HttpResponse {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("keyId", params.keyId())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.DELETE)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments(
+                        "v1",
+                        "sub-accounts",
+                        params._pathParam(0),
+                        "api-keys",
+                        params._pathParam(1),
+                    )
+                    .apply { params._body()?.let { body(json(clientOptions.jsonMapper, it)) } }
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.executeAsync(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response.use { revokeHandler.handle(it) }
+            }
+        }
+    }
+}
