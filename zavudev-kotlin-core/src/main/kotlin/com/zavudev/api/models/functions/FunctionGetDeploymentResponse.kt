@@ -252,6 +252,8 @@ private constructor(
         fun version(): Long = version.getRequired("version")
 
         /**
+         * Size of the built bundle in bytes. Null until the build finishes.
+         *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
          */
@@ -272,6 +274,8 @@ private constructor(
         fun errorMessage(): String? = errorMessage.getNullable("errorMessage")
 
         /**
+         * Total size of the deployed source tree in bytes.
+         *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
          */
@@ -469,6 +473,7 @@ private constructor(
              */
             fun version(version: JsonField<Long>) = apply { this.version = version }
 
+            /** Size of the built bundle in bytes. Null until the build finishes. */
             fun bundleBytes(bundleBytes: Long?) = bundleBytes(JsonField.ofNullable(bundleBytes))
 
             /**
@@ -516,6 +521,7 @@ private constructor(
                 this.errorMessage = errorMessage
             }
 
+            /** Total size of the deployed source tree in bytes. */
             fun sourceCodeBytes(sourceCodeBytes: Long?) =
                 sourceCodeBytes(JsonField.ofNullable(sourceCodeBytes))
 
