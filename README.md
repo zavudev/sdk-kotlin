@@ -3,7 +3,7 @@
 <!-- x-release-please-start-version -->
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.zavudev.api/zavudev-kotlin)](https://central.sonatype.com/artifact/com.zavudev.api/zavudev-kotlin/0.0.1)
-[![javadoc](https://javadoc.io/badge2/com.zavudev.api/zavudev-kotlin/0.0.1/javadoc.svg)](https://javadoc.io/doc/com.zavudev.api/zavudev-kotlin/0.0.1)
+[![javadoc](https://javadoc.io/badge2/com.zavudev.api/zavudev-kotlin/javadoc.svg)](https://javadoc.io/doc/com.zavudev.api/zavudev-kotlin/0.0.1)
 
 <!-- x-release-please-end -->
 
