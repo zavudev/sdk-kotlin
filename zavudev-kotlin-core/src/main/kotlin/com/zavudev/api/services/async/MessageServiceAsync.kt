@@ -6,6 +6,8 @@ import com.google.errorprone.annotations.MustBeClosed
 import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.core.RequestOptions
 import com.zavudev.api.core.http.HttpResponseFor
+import com.zavudev.api.models.messages.MessageListAttachmentsParams
+import com.zavudev.api.models.messages.MessageListAttachmentsResponse
 import com.zavudev.api.models.messages.MessageListPageAsync
 import com.zavudev.api.models.messages.MessageListParams
 import com.zavudev.api.models.messages.MessageReactParams
@@ -55,6 +57,33 @@ interface MessageServiceAsync {
     /** @see list */
     suspend fun list(requestOptions: RequestOptions): MessageListPageAsync =
         list(MessageListParams.none(), requestOptions)
+
+    /**
+     * List the stored file attachments for an email message and get a short-lived signed
+     * `downloadUrl` for each. Works for both inbound emails (received via `message.inbound`) and
+     * outbound emails you sent with attachments. Messages without stored attachments (including
+     * SMS, WhatsApp, and other channels) return an empty list. Each `downloadUrl` is generated
+     * fresh per request and expires — fetch the file promptly and do not cache the URL.
+     */
+    suspend fun listAttachments(
+        messageId: String,
+        params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): MessageListAttachmentsResponse =
+        listAttachments(params.toBuilder().messageId(messageId).build(), requestOptions)
+
+    /** @see listAttachments */
+    suspend fun listAttachments(
+        params: MessageListAttachmentsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): MessageListAttachmentsResponse
+
+    /** @see listAttachments */
+    suspend fun listAttachments(
+        messageId: String,
+        requestOptions: RequestOptions,
+    ): MessageListAttachmentsResponse =
+        listAttachments(messageId, MessageListAttachmentsParams.none(), requestOptions)
 
     /**
      * Send an emoji reaction to an existing WhatsApp message. Reactions are only supported for
@@ -192,6 +221,33 @@ interface MessageServiceAsync {
         @MustBeClosed
         suspend fun list(requestOptions: RequestOptions): HttpResponseFor<MessageListPageAsync> =
             list(MessageListParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `get /v1/messages/{messageId}/attachments`, but is
+         * otherwise the same as [MessageServiceAsync.listAttachments].
+         */
+        @MustBeClosed
+        suspend fun listAttachments(
+            messageId: String,
+            params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<MessageListAttachmentsResponse> =
+            listAttachments(params.toBuilder().messageId(messageId).build(), requestOptions)
+
+        /** @see listAttachments */
+        @MustBeClosed
+        suspend fun listAttachments(
+            params: MessageListAttachmentsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<MessageListAttachmentsResponse>
+
+        /** @see listAttachments */
+        @MustBeClosed
+        suspend fun listAttachments(
+            messageId: String,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<MessageListAttachmentsResponse> =
+            listAttachments(messageId, MessageListAttachmentsParams.none(), requestOptions)
 
         /**
          * Returns a raw HTTP response for `post /v1/messages/{messageId}/reactions`, but is
