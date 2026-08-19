@@ -4,9 +4,14 @@ package com.zavudev.api.client
 
 import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.services.blocking.AddressService
+import com.zavudev.api.services.blocking.AgentService
+import com.zavudev.api.services.blocking.AgentTemplateService
 import com.zavudev.api.services.blocking.BalanceService
 import com.zavudev.api.services.blocking.BroadcastService
+import com.zavudev.api.services.blocking.CallService
 import com.zavudev.api.services.blocking.ContactService
+import com.zavudev.api.services.blocking.ConversationService
+import com.zavudev.api.services.blocking.EmailDomainService
 import com.zavudev.api.services.blocking.FunctionService
 import com.zavudev.api.services.blocking.IntrospectService
 import com.zavudev.api.services.blocking.InvitationService
@@ -88,6 +93,16 @@ interface ZavudevClient {
 
     fun functions(): FunctionService
 
+    fun conversations(): ConversationService
+
+    fun calls(): CallService
+
+    fun agentTemplates(): AgentTemplateService
+
+    fun emailDomains(): EmailDomainService
+
+    fun agents(): AgentService
+
     /**
      * Closes this client, relinquishing any underlying resources.
      *
@@ -142,5 +157,15 @@ interface ZavudevClient {
         fun me(): MeService.WithRawResponse
 
         fun functions(): FunctionService.WithRawResponse
+
+        fun conversations(): ConversationService.WithRawResponse
+
+        fun calls(): CallService.WithRawResponse
+
+        fun agentTemplates(): AgentTemplateService.WithRawResponse
+
+        fun emailDomains(): EmailDomainService.WithRawResponse
+
+        fun agents(): AgentService.WithRawResponse
     }
 }

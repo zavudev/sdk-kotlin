@@ -39,6 +39,17 @@ internal class MessageServiceAsyncTest {
 
     @Disabled("Mock server tests are disabled")
     @Test
+    suspend fun listAttachments() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val messageServiceAsync = client.messages()
+
+        val response = messageServiceAsync.listAttachments("messageId")
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
     suspend fun react() {
         val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
         val messageServiceAsync = client.messages()
