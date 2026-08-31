@@ -14,13 +14,21 @@ import com.zavudev.api.models.functions.FunctionDeployParams
 import com.zavudev.api.models.functions.FunctionDeployResponse
 import com.zavudev.api.models.functions.FunctionGetDeploymentParams
 import com.zavudev.api.models.functions.FunctionGetDeploymentResponse
+import com.zavudev.api.models.functions.FunctionListDeploymentsParams
+import com.zavudev.api.models.functions.FunctionListDeploymentsResponse
+import com.zavudev.api.models.functions.FunctionListEventTypesParams
+import com.zavudev.api.models.functions.FunctionListEventTypesResponse
 import com.zavudev.api.models.functions.FunctionRetrieveParams
 import com.zavudev.api.models.functions.FunctionRetrieveResponse
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentParams
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentResponse
 import com.zavudev.api.models.functions.FunctionTailLogsParams
 import com.zavudev.api.models.functions.FunctionTailLogsResponse
 import com.zavudev.api.models.functions.FunctionUpdateParams
 import com.zavudev.api.models.functions.FunctionUpdateResponse
+import com.zavudev.api.services.async.functions.GitLinkServiceAsync
 import com.zavudev.api.services.async.functions.SecretServiceAsync
+import com.zavudev.api.services.async.functions.TriggerServiceAsync
 
 interface FunctionServiceAsync {
 
@@ -37,6 +45,10 @@ interface FunctionServiceAsync {
     fun withOptions(modifier: (ClientOptions.Builder) -> Unit): FunctionServiceAsync
 
     fun secrets(): SecretServiceAsync
+
+    fun triggers(): TriggerServiceAsync
+
+    fun gitLink(): GitLinkServiceAsync
 
     /**
      * Create a new Zavu Function. The function starts in `draft` status. A dedicated API key is
@@ -161,6 +173,63 @@ interface FunctionServiceAsync {
         getDeployment(deploymentId, FunctionGetDeploymentParams.none(), requestOptions)
 
     /**
+     * List a function's deployment history, newest first. Source code is omitted; fetch a single
+     * deployment via GET /v1/functions/deployments/{deploymentId} for full details.
+     */
+    suspend fun listDeployments(
+        functionId: String,
+        params: FunctionListDeploymentsParams = FunctionListDeploymentsParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): FunctionListDeploymentsResponse =
+        listDeployments(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+    /** @see listDeployments */
+    suspend fun listDeployments(
+        params: FunctionListDeploymentsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): FunctionListDeploymentsResponse
+
+    /** @see listDeployments */
+    suspend fun listDeployments(
+        functionId: String,
+        requestOptions: RequestOptions,
+    ): FunctionListDeploymentsResponse =
+        listDeployments(functionId, FunctionListDeploymentsParams.none(), requestOptions)
+
+    /**
+     * List the event types a function trigger can subscribe to. Includes the special type `cron`,
+     * which fires on a schedule (see POST /v1/functions/{functionId}/triggers) rather than on a
+     * messaging event.
+     */
+    suspend fun listEventTypes(
+        params: FunctionListEventTypesParams = FunctionListEventTypesParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): FunctionListEventTypesResponse
+
+    /** @see listEventTypes */
+    suspend fun listEventTypes(requestOptions: RequestOptions): FunctionListEventTypesResponse =
+        listEventTypes(FunctionListEventTypesParams.none(), requestOptions)
+
+    /**
+     * Re-deploy a previous version by copying its source, dependencies, and runtime pin onto the
+     * function's draft, then deploying. Returns immediately with a deployment ID — poll GET
+     * /v1/functions/deployments/{deploymentId} until status is active or failed. Secrets are not
+     * rolled back.
+     */
+    suspend fun rollbackDeployment(
+        functionId: String,
+        params: FunctionRollbackDeploymentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): FunctionRollbackDeploymentResponse =
+        rollbackDeployment(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+    /** @see rollbackDeployment */
+    suspend fun rollbackDeployment(
+        params: FunctionRollbackDeploymentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): FunctionRollbackDeploymentResponse
+
+    /**
      * Fetch invocation logs for a function. Logs are paginated via `nextToken`. Pass `startTime` /
      * `endTime` (Unix epoch milliseconds) to bound the window, or `filterPattern` to filter
      * messages.
@@ -200,6 +269,10 @@ interface FunctionServiceAsync {
         ): FunctionServiceAsync.WithRawResponse
 
         fun secrets(): SecretServiceAsync.WithRawResponse
+
+        fun triggers(): TriggerServiceAsync.WithRawResponse
+
+        fun gitLink(): GitLinkServiceAsync.WithRawResponse
 
         /**
          * Returns a raw HTTP response for `post /v1/functions`, but is otherwise the same as
@@ -345,6 +418,69 @@ interface FunctionServiceAsync {
             requestOptions: RequestOptions,
         ): HttpResponseFor<FunctionGetDeploymentResponse> =
             getDeployment(deploymentId, FunctionGetDeploymentParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `get /v1/functions/{functionId}/deployments`, but is
+         * otherwise the same as [FunctionServiceAsync.listDeployments].
+         */
+        @MustBeClosed
+        suspend fun listDeployments(
+            functionId: String,
+            params: FunctionListDeploymentsParams = FunctionListDeploymentsParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<FunctionListDeploymentsResponse> =
+            listDeployments(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+        /** @see listDeployments */
+        @MustBeClosed
+        suspend fun listDeployments(
+            params: FunctionListDeploymentsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<FunctionListDeploymentsResponse>
+
+        /** @see listDeployments */
+        @MustBeClosed
+        suspend fun listDeployments(
+            functionId: String,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<FunctionListDeploymentsResponse> =
+            listDeployments(functionId, FunctionListDeploymentsParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `get /v1/functions/event-types`, but is otherwise the
+         * same as [FunctionServiceAsync.listEventTypes].
+         */
+        @MustBeClosed
+        suspend fun listEventTypes(
+            params: FunctionListEventTypesParams = FunctionListEventTypesParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<FunctionListEventTypesResponse>
+
+        /** @see listEventTypes */
+        @MustBeClosed
+        suspend fun listEventTypes(
+            requestOptions: RequestOptions
+        ): HttpResponseFor<FunctionListEventTypesResponse> =
+            listEventTypes(FunctionListEventTypesParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `post /v1/functions/{functionId}/rollback`, but is
+         * otherwise the same as [FunctionServiceAsync.rollbackDeployment].
+         */
+        @MustBeClosed
+        suspend fun rollbackDeployment(
+            functionId: String,
+            params: FunctionRollbackDeploymentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<FunctionRollbackDeploymentResponse> =
+            rollbackDeployment(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+        /** @see rollbackDeployment */
+        @MustBeClosed
+        suspend fun rollbackDeployment(
+            params: FunctionRollbackDeploymentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<FunctionRollbackDeploymentResponse>
 
         /**
          * Returns a raw HTTP response for `get /v1/functions/{functionId}/logs`, but is otherwise

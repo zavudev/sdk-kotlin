@@ -174,6 +174,7 @@ private constructor(
         private val functionId: JsonField<String>,
         private val status: JsonField<Status>,
         private val version: JsonField<Long>,
+        private val buildLogs: JsonField<String>,
         private val bundleBytes: JsonField<Long>,
         private val deployedAt: JsonField<OffsetDateTime>,
         private val errorMessage: JsonField<String>,
@@ -192,6 +193,9 @@ private constructor(
             functionId: JsonField<String> = JsonMissing.of(),
             @JsonProperty("status") @ExcludeMissing status: JsonField<Status> = JsonMissing.of(),
             @JsonProperty("version") @ExcludeMissing version: JsonField<Long> = JsonMissing.of(),
+            @JsonProperty("buildLogs")
+            @ExcludeMissing
+            buildLogs: JsonField<String> = JsonMissing.of(),
             @JsonProperty("bundleBytes")
             @ExcludeMissing
             bundleBytes: JsonField<Long> = JsonMissing.of(),
@@ -210,6 +214,7 @@ private constructor(
             functionId,
             status,
             version,
+            buildLogs,
             bundleBytes,
             deployedAt,
             errorMessage,
@@ -252,6 +257,19 @@ private constructor(
         fun version(): Long = version.getRequired("version")
 
         /**
+         * What the build printed: dependency installation, the bundler's output, and the compiler's
+         * message when it failed. Returned when fetching a single deployment, omitted from the
+         * list. Read this first when a deploy fails — `errorMessage` is often the outer wrapper's
+         * summary, and the line that names the broken import or the syntax error is here.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun buildLogs(): String? = buildLogs.getNullable("buildLogs")
+
+        /**
+         * Size of the built bundle in bytes. Null until the build finishes.
+         *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
          */
@@ -272,6 +290,8 @@ private constructor(
         fun errorMessage(): String? = errorMessage.getNullable("errorMessage")
 
         /**
+         * Total size of the deployed source tree in bytes.
+         *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
          */
@@ -315,6 +335,13 @@ private constructor(
          * Unlike [version], this method doesn't throw if the JSON field has an unexpected type.
          */
         @JsonProperty("version") @ExcludeMissing fun _version(): JsonField<Long> = version
+
+        /**
+         * Returns the raw JSON value of [buildLogs].
+         *
+         * Unlike [buildLogs], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("buildLogs") @ExcludeMissing fun _buildLogs(): JsonField<String> = buildLogs
 
         /**
          * Returns the raw JSON value of [bundleBytes].
@@ -391,6 +418,7 @@ private constructor(
             private var functionId: JsonField<String>? = null
             private var status: JsonField<Status>? = null
             private var version: JsonField<Long>? = null
+            private var buildLogs: JsonField<String> = JsonMissing.of()
             private var bundleBytes: JsonField<Long> = JsonMissing.of()
             private var deployedAt: JsonField<OffsetDateTime> = JsonMissing.of()
             private var errorMessage: JsonField<String> = JsonMissing.of()
@@ -403,6 +431,7 @@ private constructor(
                 functionId = deployment.functionId
                 status = deployment.status
                 version = deployment.version
+                buildLogs = deployment.buildLogs
                 bundleBytes = deployment.bundleBytes
                 deployedAt = deployment.deployedAt
                 errorMessage = deployment.errorMessage
@@ -469,6 +498,25 @@ private constructor(
              */
             fun version(version: JsonField<Long>) = apply { this.version = version }
 
+            /**
+             * What the build printed: dependency installation, the bundler's output, and the
+             * compiler's message when it failed. Returned when fetching a single deployment,
+             * omitted from the list. Read this first when a deploy fails — `errorMessage` is often
+             * the outer wrapper's summary, and the line that names the broken import or the syntax
+             * error is here.
+             */
+            fun buildLogs(buildLogs: String?) = buildLogs(JsonField.ofNullable(buildLogs))
+
+            /**
+             * Sets [Builder.buildLogs] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.buildLogs] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun buildLogs(buildLogs: JsonField<String>) = apply { this.buildLogs = buildLogs }
+
+            /** Size of the built bundle in bytes. Null until the build finishes. */
             fun bundleBytes(bundleBytes: Long?) = bundleBytes(JsonField.ofNullable(bundleBytes))
 
             /**
@@ -516,6 +564,7 @@ private constructor(
                 this.errorMessage = errorMessage
             }
 
+            /** Total size of the deployed source tree in bytes. */
             fun sourceCodeBytes(sourceCodeBytes: Long?) =
                 sourceCodeBytes(JsonField.ofNullable(sourceCodeBytes))
 
@@ -579,6 +628,7 @@ private constructor(
                     checkRequired("functionId", functionId),
                     checkRequired("status", status),
                     checkRequired("version", version),
+                    buildLogs,
                     bundleBytes,
                     deployedAt,
                     errorMessage,
@@ -608,6 +658,7 @@ private constructor(
             functionId()
             status().validate()
             version()
+            buildLogs()
             bundleBytes()
             deployedAt()
             errorMessage()
@@ -635,6 +686,7 @@ private constructor(
                 (if (functionId.asKnown() == null) 0 else 1) +
                 (status.asKnown()?.validity() ?: 0) +
                 (if (version.asKnown() == null) 0 else 1) +
+                (if (buildLogs.asKnown() == null) 0 else 1) +
                 (if (bundleBytes.asKnown() == null) 0 else 1) +
                 (if (deployedAt.asKnown() == null) 0 else 1) +
                 (if (errorMessage.asKnown() == null) 0 else 1) +
@@ -819,6 +871,7 @@ private constructor(
                 functionId == other.functionId &&
                 status == other.status &&
                 version == other.version &&
+                buildLogs == other.buildLogs &&
                 bundleBytes == other.bundleBytes &&
                 deployedAt == other.deployedAt &&
                 errorMessage == other.errorMessage &&
@@ -833,6 +886,7 @@ private constructor(
                 functionId,
                 status,
                 version,
+                buildLogs,
                 bundleBytes,
                 deployedAt,
                 errorMessage,
@@ -844,7 +898,7 @@ private constructor(
         override fun hashCode(): Int = hashCode
 
         override fun toString() =
-            "Deployment{id=$id, createdAt=$createdAt, functionId=$functionId, status=$status, version=$version, bundleBytes=$bundleBytes, deployedAt=$deployedAt, errorMessage=$errorMessage, sourceCodeBytes=$sourceCodeBytes, additionalProperties=$additionalProperties}"
+            "Deployment{id=$id, createdAt=$createdAt, functionId=$functionId, status=$status, version=$version, buildLogs=$buildLogs, bundleBytes=$bundleBytes, deployedAt=$deployedAt, errorMessage=$errorMessage, sourceCodeBytes=$sourceCodeBytes, additionalProperties=$additionalProperties}"
     }
 
     override fun equals(other: Any?): Boolean {

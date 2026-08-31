@@ -1,7 +1,11 @@
 # Zavudev Kotlin API Library
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.zavudev.api/zavudev-kotlin)](https://central.sonatype.com/artifact/com.zavudev.api/zavudev-kotlin/0.0.1)
-[![javadoc](https://javadoc.io/badge2/com.zavudev.api/zavudev-kotlin/0.0.1/javadoc.svg)](https://javadoc.io/doc/com.zavudev.api/zavudev-kotlin/0.0.1)
+<!-- x-release-please-start-version -->
+
+[![Maven Central](https://img.shields.io/maven-central/v/com.zavudev.api/zavudev-kotlin)](https://central.sonatype.com/artifact/com.zavudev.api/zavudev-kotlin/0.1.0)
+[![javadoc](https://javadoc.io/badge2/com.zavudev.api/zavudev-kotlin/javadoc.svg)](https://javadoc.io/doc/com.zavudev.api/zavudev-kotlin/0.1.0)
+
+<!-- x-release-please-end -->
 
 The Zavudev Kotlin SDK provides convenient access to the [Zavudev REST API](https://docs.zavu.dev) from applications written in Kotlin.
 
@@ -16,14 +20,20 @@ Use the Zavudev MCP Server to enable AI assistants to interact with this API, al
 
 > Note: You may need to set environment variables in your MCP client.
 
-The REST API documentation can be found on [docs.zavu.dev](https://docs.zavu.dev). KDocs are available on [javadoc.io](https://javadoc.io/doc/com.zavudev.api/zavudev-kotlin/0.0.1).
+<!-- x-release-please-start-version -->
+
+The REST API documentation can be found on [docs.zavu.dev](https://docs.zavu.dev). KDocs are available on [javadoc.io](https://javadoc.io/doc/com.zavudev.api/zavudev-kotlin/0.1.0).
+
+<!-- x-release-please-end -->
 
 ## Installation
+
+<!-- x-release-please-start-version -->
 
 ### Gradle
 
 ```kotlin
-implementation("com.zavudev.api:zavudev-kotlin:0.0.1")
+implementation("com.zavudev.api:zavudev-kotlin:0.1.0")
 ```
 
 ### Maven
@@ -32,9 +42,11 @@ implementation("com.zavudev.api:zavudev-kotlin:0.0.1")
 <dependency>
   <groupId>com.zavudev.api</groupId>
   <artifactId>zavudev-kotlin</artifactId>
-  <version>0.0.1</version>
+  <version>0.1.0</version>
 </dependency>
 ```
+
+<!-- x-release-please-end -->
 
 ## Requirements
 
@@ -717,4 +729,4 @@ This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) con
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
 
-We are keen for your feedback; please open an [issue](https://www.github.com/stainless-sdks/zavudev-kotlin/issues) with questions, bugs, or suggestions.
+We are keen for your feedback; please open an [issue](https://www.github.com/zavudev/sdk-kotlin/issues) with questions, bugs, or suggestions.
