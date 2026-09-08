@@ -6,6 +6,8 @@ import com.google.errorprone.annotations.MustBeClosed
 import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.core.RequestOptions
 import com.zavudev.api.core.http.HttpResponseFor
+import com.zavudev.api.models.urls.UrlEscalateParams
+import com.zavudev.api.models.urls.UrlEscalateResponse
 import com.zavudev.api.models.urls.UrlListVerifiedPageAsync
 import com.zavudev.api.models.urls.UrlListVerifiedParams
 import com.zavudev.api.models.urls.UrlRetrieveDetailsParams
@@ -26,6 +28,22 @@ interface UrlServiceAsync {
      * The original service is not modified.
      */
     fun withOptions(modifier: (ClientOptions.Builder) -> Unit): UrlServiceAsync
+
+    /**
+     * Request manual review of a rejected URL. Only URLs in 'rejected' status can be escalated; the
+     * status then moves to 'escalated'.
+     */
+    suspend fun escalate(
+        urlId: String,
+        params: UrlEscalateParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): UrlEscalateResponse = escalate(params.toBuilder().urlId(urlId).build(), requestOptions)
+
+    /** @see escalate */
+    suspend fun escalate(
+        params: UrlEscalateParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): UrlEscalateResponse
 
     /** List URLs that have been verified for this project. */
     suspend fun listVerified(
@@ -80,6 +98,25 @@ interface UrlServiceAsync {
          * The original service is not modified.
          */
         fun withOptions(modifier: (ClientOptions.Builder) -> Unit): UrlServiceAsync.WithRawResponse
+
+        /**
+         * Returns a raw HTTP response for `post /v1/urls/{urlId}/escalate`, but is otherwise the
+         * same as [UrlServiceAsync.escalate].
+         */
+        @MustBeClosed
+        suspend fun escalate(
+            urlId: String,
+            params: UrlEscalateParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<UrlEscalateResponse> =
+            escalate(params.toBuilder().urlId(urlId).build(), requestOptions)
+
+        /** @see escalate */
+        @MustBeClosed
+        suspend fun escalate(
+            params: UrlEscalateParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<UrlEscalateResponse>
 
         /**
          * Returns a raw HTTP response for `get /v1/urls`, but is otherwise the same as

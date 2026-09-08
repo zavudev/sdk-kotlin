@@ -39,6 +39,16 @@ private constructor(
     fun defaultChannel(): DefaultChannel? = body.defaultChannel()
 
     /**
+     * Human-readable name for this contact. Set to null to clear it and fall back to the contact's
+     * identifier. Contacts created automatically from an inbound message have no display name until
+     * you set one.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun displayName(): String? = body.displayName()
+
+    /**
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
      */
@@ -50,6 +60,13 @@ private constructor(
      * Unlike [defaultChannel], this method doesn't throw if the JSON field has an unexpected type.
      */
     fun _defaultChannel(): JsonField<DefaultChannel> = body._defaultChannel()
+
+    /**
+     * Returns the raw JSON value of [displayName].
+     *
+     * Unlike [displayName], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    fun _displayName(): JsonField<String> = body._displayName()
 
     /**
      * Returns the raw JSON value of [metadata].
@@ -99,6 +116,7 @@ private constructor(
          * This is generally only useful if you are already constructing the body separately.
          * Otherwise, it's more convenient to use the top-level setters instead:
          * - [defaultChannel]
+         * - [displayName]
          * - [metadata]
          */
         fun body(body: Body) = apply { this.body = body.toBuilder() }
@@ -118,6 +136,22 @@ private constructor(
         fun defaultChannel(defaultChannel: JsonField<DefaultChannel>) = apply {
             body.defaultChannel(defaultChannel)
         }
+
+        /**
+         * Human-readable name for this contact. Set to null to clear it and fall back to the
+         * contact's identifier. Contacts created automatically from an inbound message have no
+         * display name until you set one.
+         */
+        fun displayName(displayName: String?) = apply { body.displayName(displayName) }
+
+        /**
+         * Sets [Builder.displayName] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.displayName] with a well-typed [String] value instead.
+         * This method is primarily for setting the field to an undocumented or not yet supported
+         * value.
+         */
+        fun displayName(displayName: JsonField<String>) = apply { body.displayName(displayName) }
 
         fun metadata(metadata: Metadata) = apply { body.metadata(metadata) }
 
@@ -277,6 +311,7 @@ private constructor(
     @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     private constructor(
         private val defaultChannel: JsonField<DefaultChannel>,
+        private val displayName: JsonField<String>,
         private val metadata: JsonField<Metadata>,
         private val additionalProperties: MutableMap<String, JsonValue>,
     ) {
@@ -286,10 +321,13 @@ private constructor(
             @JsonProperty("defaultChannel")
             @ExcludeMissing
             defaultChannel: JsonField<DefaultChannel> = JsonMissing.of(),
+            @JsonProperty("displayName")
+            @ExcludeMissing
+            displayName: JsonField<String> = JsonMissing.of(),
             @JsonProperty("metadata")
             @ExcludeMissing
             metadata: JsonField<Metadata> = JsonMissing.of(),
-        ) : this(defaultChannel, metadata, mutableMapOf())
+        ) : this(defaultChannel, displayName, metadata, mutableMapOf())
 
         /**
          * Preferred channel for this contact. Set to null to clear.
@@ -298,6 +336,16 @@ private constructor(
          *   server responded with an unexpected value).
          */
         fun defaultChannel(): DefaultChannel? = defaultChannel.getNullable("defaultChannel")
+
+        /**
+         * Human-readable name for this contact. Set to null to clear it and fall back to the
+         * contact's identifier. Contacts created automatically from an inbound message have no
+         * display name until you set one.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun displayName(): String? = displayName.getNullable("displayName")
 
         /**
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
@@ -314,6 +362,15 @@ private constructor(
         @JsonProperty("defaultChannel")
         @ExcludeMissing
         fun _defaultChannel(): JsonField<DefaultChannel> = defaultChannel
+
+        /**
+         * Returns the raw JSON value of [displayName].
+         *
+         * Unlike [displayName], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("displayName")
+        @ExcludeMissing
+        fun _displayName(): JsonField<String> = displayName
 
         /**
          * Returns the raw JSON value of [metadata].
@@ -344,11 +401,13 @@ private constructor(
         class Builder internal constructor() {
 
             private var defaultChannel: JsonField<DefaultChannel> = JsonMissing.of()
+            private var displayName: JsonField<String> = JsonMissing.of()
             private var metadata: JsonField<Metadata> = JsonMissing.of()
             private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
 
             internal fun from(body: Body) = apply {
                 defaultChannel = body.defaultChannel
+                displayName = body.displayName
                 metadata = body.metadata
                 additionalProperties = body.additionalProperties.toMutableMap()
             }
@@ -366,6 +425,24 @@ private constructor(
              */
             fun defaultChannel(defaultChannel: JsonField<DefaultChannel>) = apply {
                 this.defaultChannel = defaultChannel
+            }
+
+            /**
+             * Human-readable name for this contact. Set to null to clear it and fall back to the
+             * contact's identifier. Contacts created automatically from an inbound message have no
+             * display name until you set one.
+             */
+            fun displayName(displayName: String?) = displayName(JsonField.ofNullable(displayName))
+
+            /**
+             * Sets [Builder.displayName] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.displayName] with a well-typed [String] value
+             * instead. This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun displayName(displayName: JsonField<String>) = apply {
+                this.displayName = displayName
             }
 
             fun metadata(metadata: Metadata) = metadata(JsonField.of(metadata))
@@ -403,7 +480,8 @@ private constructor(
              *
              * Further updates to this [Builder] will not mutate the returned instance.
              */
-            fun build(): Body = Body(defaultChannel, metadata, additionalProperties.toMutableMap())
+            fun build(): Body =
+                Body(defaultChannel, displayName, metadata, additionalProperties.toMutableMap())
         }
 
         private var validated: Boolean = false
@@ -423,6 +501,7 @@ private constructor(
             }
 
             defaultChannel()?.validate()
+            displayName()
             metadata()?.validate()
             validated = true
         }
@@ -442,7 +521,9 @@ private constructor(
          * Used for best match union deserialization.
          */
         internal fun validity(): Int =
-            (defaultChannel.asKnown()?.validity() ?: 0) + (metadata.asKnown()?.validity() ?: 0)
+            (defaultChannel.asKnown()?.validity() ?: 0) +
+                (if (displayName.asKnown() == null) 0 else 1) +
+                (metadata.asKnown()?.validity() ?: 0)
 
         override fun equals(other: Any?): Boolean {
             if (this === other) {
@@ -451,18 +532,19 @@ private constructor(
 
             return other is Body &&
                 defaultChannel == other.defaultChannel &&
+                displayName == other.displayName &&
                 metadata == other.metadata &&
                 additionalProperties == other.additionalProperties
         }
 
         private val hashCode: Int by lazy {
-            Objects.hash(defaultChannel, metadata, additionalProperties)
+            Objects.hash(defaultChannel, displayName, metadata, additionalProperties)
         }
 
         override fun hashCode(): Int = hashCode
 
         override fun toString() =
-            "Body{defaultChannel=$defaultChannel, metadata=$metadata, additionalProperties=$additionalProperties}"
+            "Body{defaultChannel=$defaultChannel, displayName=$displayName, metadata=$metadata, additionalProperties=$additionalProperties}"
     }
 
     /** Preferred channel for this contact. Set to null to clear. */

@@ -15,6 +15,8 @@ import com.zavudev.api.core.http.HttpResponseFor
 import com.zavudev.api.core.http.json
 import com.zavudev.api.core.http.parseable
 import com.zavudev.api.core.prepareAsync
+import com.zavudev.api.models.introspect.IntrospectValidateEmailParams
+import com.zavudev.api.models.introspect.IntrospectValidateEmailResponse
 import com.zavudev.api.models.introspect.IntrospectValidatePhoneParams
 import com.zavudev.api.models.introspect.IntrospectValidatePhoneResponse
 
@@ -29,6 +31,13 @@ class IntrospectServiceAsyncImpl internal constructor(private val clientOptions:
 
     override fun withOptions(modifier: (ClientOptions.Builder) -> Unit): IntrospectServiceAsync =
         IntrospectServiceAsyncImpl(clientOptions.toBuilder().apply(modifier).build())
+
+    override suspend fun validateEmail(
+        params: IntrospectValidateEmailParams,
+        requestOptions: RequestOptions,
+    ): IntrospectValidateEmailResponse =
+        // post /v1/introspect/email
+        withRawResponse().validateEmail(params, requestOptions).parse()
 
     override suspend fun validatePhone(
         params: IntrospectValidatePhoneParams,
@@ -49,6 +58,34 @@ class IntrospectServiceAsyncImpl internal constructor(private val clientOptions:
             IntrospectServiceAsyncImpl.WithRawResponseImpl(
                 clientOptions.toBuilder().apply(modifier).build()
             )
+
+        private val validateEmailHandler: Handler<IntrospectValidateEmailResponse> =
+            jsonHandler<IntrospectValidateEmailResponse>(clientOptions.jsonMapper)
+
+        override suspend fun validateEmail(
+            params: IntrospectValidateEmailParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<IntrospectValidateEmailResponse> {
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.POST)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "introspect", "email")
+                    .body(json(clientOptions.jsonMapper, params._body()))
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.executeAsync(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { validateEmailHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
+            }
+        }
 
         private val validatePhoneHandler: Handler<IntrospectValidatePhoneResponse> =
             jsonHandler<IntrospectValidatePhoneResponse>(clientOptions.jsonMapper)

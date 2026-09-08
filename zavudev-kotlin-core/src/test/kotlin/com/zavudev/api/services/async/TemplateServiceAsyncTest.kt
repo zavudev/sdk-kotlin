@@ -5,6 +5,7 @@ package com.zavudev.api.services.async
 import com.zavudev.api.client.okhttp.ZavudevOkHttpClientAsync
 import com.zavudev.api.models.templates.TemplateCreateParams
 import com.zavudev.api.models.templates.TemplateSubmitParams
+import com.zavudev.api.models.templates.TemplateSyncParams
 import com.zavudev.api.models.templates.WhatsappCategory
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -101,5 +102,17 @@ internal class TemplateServiceAsyncTest {
             )
 
         template.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    suspend fun sync() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val templateServiceAsync = client.templates()
+
+        val response =
+            templateServiceAsync.sync(TemplateSyncParams.builder().senderId("sender_12345").build())
+
+        response.validate()
     }
 }

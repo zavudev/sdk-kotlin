@@ -64,6 +64,28 @@ private constructor(
     fun description(): String? = body.description()
 
     /**
+     * Which file in `files` is the entry point. Defaults to `index.ts`.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun entrypoint(): String? = body.entrypoint()
+
+    /**
+     * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+     * `lib/orders.ts`). Imports between them are resolved when the function is built, so a function
+     * can be split across as many files as it needs.
+     *
+     * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json` are
+     * rejected. npm packages are not uploaded here — declare them under `dependencies` and Zavu
+     * installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun files(): Files? = body.files()
+
+    /**
      * Whether to expose a public HTTPS URL for this function.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
@@ -86,7 +108,9 @@ private constructor(
     fun runtime(): Runtime? = body.runtime()
 
     /**
-     * TypeScript source code for the function entry point (max ~900KB).
+     * Shortcut for a single-file function: exactly equivalent to sending `files` with one entry
+     * named after `entrypoint` (`index.ts` by default). Fully supported — use whichever fits. If
+     * both are sent, `files` wins.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -130,6 +154,20 @@ private constructor(
      * Unlike [description], this method doesn't throw if the JSON field has an unexpected type.
      */
     fun _description(): JsonField<String> = body._description()
+
+    /**
+     * Returns the raw JSON value of [entrypoint].
+     *
+     * Unlike [entrypoint], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    fun _entrypoint(): JsonField<String> = body._entrypoint()
+
+    /**
+     * Returns the raw JSON value of [files].
+     *
+     * Unlike [files], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    fun _files(): JsonField<Files> = body._files()
 
     /**
      * Returns the raw JSON value of [httpEnabled].
@@ -212,7 +250,7 @@ private constructor(
          * - [slug]
          * - [dependencies]
          * - [description]
-         * - [httpEnabled]
+         * - [entrypoint]
          * - etc.
          */
         fun body(body: Body) = apply { this.body = body.toBuilder() }
@@ -263,6 +301,37 @@ private constructor(
          */
         fun description(description: JsonField<String>) = apply { body.description(description) }
 
+        /** Which file in `files` is the entry point. Defaults to `index.ts`. */
+        fun entrypoint(entrypoint: String) = apply { body.entrypoint(entrypoint) }
+
+        /**
+         * Sets [Builder.entrypoint] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.entrypoint] with a well-typed [String] value instead.
+         * This method is primarily for setting the field to an undocumented or not yet supported
+         * value.
+         */
+        fun entrypoint(entrypoint: JsonField<String>) = apply { body.entrypoint(entrypoint) }
+
+        /**
+         * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+         * `lib/orders.ts`). Imports between them are resolved when the function is built, so a
+         * function can be split across as many files as it needs.
+         *
+         * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json`
+         * are rejected. npm packages are not uploaded here — declare them under `dependencies` and
+         * Zavu installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+         */
+        fun files(files: Files) = apply { body.files(files) }
+
+        /**
+         * Sets [Builder.files] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.files] with a well-typed [Files] value instead. This
+         * method is primarily for setting the field to an undocumented or not yet supported value.
+         */
+        fun files(files: JsonField<Files>) = apply { body.files(files) }
+
         /** Whether to expose a public HTTPS URL for this function. */
         fun httpEnabled(httpEnabled: Boolean) = apply { body.httpEnabled(httpEnabled) }
 
@@ -297,7 +366,11 @@ private constructor(
          */
         fun runtime(runtime: JsonField<Runtime>) = apply { body.runtime(runtime) }
 
-        /** TypeScript source code for the function entry point (max ~900KB). */
+        /**
+         * Shortcut for a single-file function: exactly equivalent to sending `files` with one entry
+         * named after `entrypoint` (`index.ts` by default). Fully supported — use whichever fits.
+         * If both are sent, `files` wins.
+         */
         fun sourceCode(sourceCode: String) = apply { body.sourceCode(sourceCode) }
 
         /**
@@ -476,6 +549,8 @@ private constructor(
         private val slug: JsonField<String>,
         private val dependencies: JsonField<Dependencies>,
         private val description: JsonField<String>,
+        private val entrypoint: JsonField<String>,
+        private val files: JsonField<Files>,
         private val httpEnabled: JsonField<Boolean>,
         private val memoryMb: JsonField<MemoryMb>,
         private val runtime: JsonField<Runtime>,
@@ -494,6 +569,10 @@ private constructor(
             @JsonProperty("description")
             @ExcludeMissing
             description: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("entrypoint")
+            @ExcludeMissing
+            entrypoint: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("files") @ExcludeMissing files: JsonField<Files> = JsonMissing.of(),
             @JsonProperty("httpEnabled")
             @ExcludeMissing
             httpEnabled: JsonField<Boolean> = JsonMissing.of(),
@@ -512,6 +591,8 @@ private constructor(
             slug,
             dependencies,
             description,
+            entrypoint,
+            files,
             httpEnabled,
             memoryMb,
             runtime,
@@ -549,6 +630,28 @@ private constructor(
         fun description(): String? = description.getNullable("description")
 
         /**
+         * Which file in `files` is the entry point. Defaults to `index.ts`.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun entrypoint(): String? = entrypoint.getNullable("entrypoint")
+
+        /**
+         * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+         * `lib/orders.ts`). Imports between them are resolved when the function is built, so a
+         * function can be split across as many files as it needs.
+         *
+         * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json`
+         * are rejected. npm packages are not uploaded here — declare them under `dependencies` and
+         * Zavu installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun files(): Files? = files.getNullable("files")
+
+        /**
          * Whether to expose a public HTTPS URL for this function.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
@@ -571,7 +674,9 @@ private constructor(
         fun runtime(): Runtime? = runtime.getNullable("runtime")
 
         /**
-         * TypeScript source code for the function entry point (max ~900KB).
+         * Shortcut for a single-file function: exactly equivalent to sending `files` with one entry
+         * named after `entrypoint` (`index.ts` by default). Fully supported — use whichever fits.
+         * If both are sent, `files` wins.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -621,6 +726,22 @@ private constructor(
         @JsonProperty("description")
         @ExcludeMissing
         fun _description(): JsonField<String> = description
+
+        /**
+         * Returns the raw JSON value of [entrypoint].
+         *
+         * Unlike [entrypoint], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("entrypoint")
+        @ExcludeMissing
+        fun _entrypoint(): JsonField<String> = entrypoint
+
+        /**
+         * Returns the raw JSON value of [files].
+         *
+         * Unlike [files], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("files") @ExcludeMissing fun _files(): JsonField<Files> = files
 
         /**
          * Returns the raw JSON value of [httpEnabled].
@@ -694,6 +815,8 @@ private constructor(
             private var slug: JsonField<String>? = null
             private var dependencies: JsonField<Dependencies> = JsonMissing.of()
             private var description: JsonField<String> = JsonMissing.of()
+            private var entrypoint: JsonField<String> = JsonMissing.of()
+            private var files: JsonField<Files> = JsonMissing.of()
             private var httpEnabled: JsonField<Boolean> = JsonMissing.of()
             private var memoryMb: JsonField<MemoryMb> = JsonMissing.of()
             private var runtime: JsonField<Runtime> = JsonMissing.of()
@@ -706,6 +829,8 @@ private constructor(
                 slug = body.slug
                 dependencies = body.dependencies
                 description = body.description
+                entrypoint = body.entrypoint
+                files = body.files
                 httpEnabled = body.httpEnabled
                 memoryMb = body.memoryMb
                 runtime = body.runtime
@@ -764,6 +889,39 @@ private constructor(
                 this.description = description
             }
 
+            /** Which file in `files` is the entry point. Defaults to `index.ts`. */
+            fun entrypoint(entrypoint: String) = entrypoint(JsonField.of(entrypoint))
+
+            /**
+             * Sets [Builder.entrypoint] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.entrypoint] with a well-typed [String] value
+             * instead. This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun entrypoint(entrypoint: JsonField<String>) = apply { this.entrypoint = entrypoint }
+
+            /**
+             * The project's source files, keyed by path relative to the project root (e.g.
+             * `index.ts`, `lib/orders.ts`). Imports between them are resolved when the function is
+             * built, so a function can be split across as many files as it needs.
+             *
+             * Paths must be relative and use forward slashes; `..`, `node_modules/` and
+             * `package.json` are rejected. npm packages are not uploaded here — declare them under
+             * `dependencies` and Zavu installs them. Limits: 200 files and 900,000 bytes for the
+             * whole tree.
+             */
+            fun files(files: Files) = files(JsonField.of(files))
+
+            /**
+             * Sets [Builder.files] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.files] with a well-typed [Files] value instead. This
+             * method is primarily for setting the field to an undocumented or not yet supported
+             * value.
+             */
+            fun files(files: JsonField<Files>) = apply { this.files = files }
+
             /** Whether to expose a public HTTPS URL for this function. */
             fun httpEnabled(httpEnabled: Boolean) = httpEnabled(JsonField.of(httpEnabled))
 
@@ -801,7 +959,11 @@ private constructor(
              */
             fun runtime(runtime: JsonField<Runtime>) = apply { this.runtime = runtime }
 
-            /** TypeScript source code for the function entry point (max ~900KB). */
+            /**
+             * Shortcut for a single-file function: exactly equivalent to sending `files` with one
+             * entry named after `entrypoint` (`index.ts` by default). Fully supported — use
+             * whichever fits. If both are sent, `files` wins.
+             */
             fun sourceCode(sourceCode: String) = sourceCode(JsonField.of(sourceCode))
 
             /**
@@ -868,6 +1030,8 @@ private constructor(
                     checkRequired("slug", slug),
                     dependencies,
                     description,
+                    entrypoint,
+                    files,
                     httpEnabled,
                     memoryMb,
                     runtime,
@@ -897,6 +1061,8 @@ private constructor(
             slug()
             dependencies()?.validate()
             description()
+            entrypoint()
+            files()?.validate()
             httpEnabled()
             memoryMb()?.validate()
             runtime()?.validate()
@@ -924,6 +1090,8 @@ private constructor(
                 (if (slug.asKnown() == null) 0 else 1) +
                 (dependencies.asKnown()?.validity() ?: 0) +
                 (if (description.asKnown() == null) 0 else 1) +
+                (if (entrypoint.asKnown() == null) 0 else 1) +
+                (files.asKnown()?.validity() ?: 0) +
                 (if (httpEnabled.asKnown() == null) 0 else 1) +
                 (memoryMb.asKnown()?.validity() ?: 0) +
                 (runtime.asKnown()?.validity() ?: 0) +
@@ -940,6 +1108,8 @@ private constructor(
                 slug == other.slug &&
                 dependencies == other.dependencies &&
                 description == other.description &&
+                entrypoint == other.entrypoint &&
+                files == other.files &&
                 httpEnabled == other.httpEnabled &&
                 memoryMb == other.memoryMb &&
                 runtime == other.runtime &&
@@ -954,6 +1124,8 @@ private constructor(
                 slug,
                 dependencies,
                 description,
+                entrypoint,
+                files,
                 httpEnabled,
                 memoryMb,
                 runtime,
@@ -966,7 +1138,7 @@ private constructor(
         override fun hashCode(): Int = hashCode
 
         override fun toString() =
-            "Body{name=$name, slug=$slug, dependencies=$dependencies, description=$description, httpEnabled=$httpEnabled, memoryMb=$memoryMb, runtime=$runtime, sourceCode=$sourceCode, timeoutSec=$timeoutSec, additionalProperties=$additionalProperties}"
+            "Body{name=$name, slug=$slug, dependencies=$dependencies, description=$description, entrypoint=$entrypoint, files=$files, httpEnabled=$httpEnabled, memoryMb=$memoryMb, runtime=$runtime, sourceCode=$sourceCode, timeoutSec=$timeoutSec, additionalProperties=$additionalProperties}"
     }
 
     /** npm dependencies. Keys are package names, values are semver ranges. */
@@ -1074,6 +1246,121 @@ private constructor(
         override fun hashCode(): Int = hashCode
 
         override fun toString() = "Dependencies{additionalProperties=$additionalProperties}"
+    }
+
+    /**
+     * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+     * `lib/orders.ts`). Imports between them are resolved when the function is built, so a function
+     * can be split across as many files as it needs.
+     *
+     * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json` are
+     * rejected. npm packages are not uploaded here — declare them under `dependencies` and Zavu
+     * installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+     */
+    class Files
+    @JsonCreator
+    private constructor(
+        @com.fasterxml.jackson.annotation.JsonValue
+        private val additionalProperties: Map<String, JsonValue>
+    ) {
+
+        @JsonAnyGetter
+        @ExcludeMissing
+        fun _additionalProperties(): Map<String, JsonValue> = additionalProperties
+
+        fun toBuilder() = Builder().from(this)
+
+        companion object {
+
+            /** Returns a mutable builder for constructing an instance of [Files]. */
+            fun builder() = Builder()
+        }
+
+        /** A builder for [Files]. */
+        class Builder internal constructor() {
+
+            private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
+
+            internal fun from(files: Files) = apply {
+                additionalProperties = files.additionalProperties.toMutableMap()
+            }
+
+            fun additionalProperties(additionalProperties: Map<String, JsonValue>) = apply {
+                this.additionalProperties.clear()
+                putAllAdditionalProperties(additionalProperties)
+            }
+
+            fun putAdditionalProperty(key: String, value: JsonValue) = apply {
+                additionalProperties.put(key, value)
+            }
+
+            fun putAllAdditionalProperties(additionalProperties: Map<String, JsonValue>) = apply {
+                this.additionalProperties.putAll(additionalProperties)
+            }
+
+            fun removeAdditionalProperty(key: String) = apply { additionalProperties.remove(key) }
+
+            fun removeAllAdditionalProperties(keys: Set<String>) = apply {
+                keys.forEach(::removeAdditionalProperty)
+            }
+
+            /**
+             * Returns an immutable instance of [Files].
+             *
+             * Further updates to this [Builder] will not mutate the returned instance.
+             */
+            fun build(): Files = Files(additionalProperties.toImmutable())
+        }
+
+        private var validated: Boolean = false
+
+        /**
+         * Validates that the types of all values in this object match their expected types
+         * recursively.
+         *
+         * This method is _not_ forwards compatible with new types from the API for existing fields.
+         *
+         * @throws ZavudevInvalidDataException if any value type in this object doesn't match its
+         *   expected type.
+         */
+        fun validate(): Files = apply {
+            if (validated) {
+                return@apply
+            }
+
+            validated = true
+        }
+
+        fun isValid(): Boolean =
+            try {
+                validate()
+                true
+            } catch (e: ZavudevInvalidDataException) {
+                false
+            }
+
+        /**
+         * Returns a score indicating how many valid values are contained in this object
+         * recursively.
+         *
+         * Used for best match union deserialization.
+         */
+        internal fun validity(): Int =
+            additionalProperties.count { (_, value) -> !value.isNull() && !value.isMissing() }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
+                return true
+            }
+
+            return other is Files && additionalProperties == other.additionalProperties
+        }
+
+        private val hashCode: Int by lazy { Objects.hash(additionalProperties) }
+
+        override fun hashCode(): Int = hashCode
+
+        override fun toString() = "Files{additionalProperties=$additionalProperties}"
     }
 
     class MemoryMb @JsonCreator private constructor(private val value: JsonField<Long>) : Enum {

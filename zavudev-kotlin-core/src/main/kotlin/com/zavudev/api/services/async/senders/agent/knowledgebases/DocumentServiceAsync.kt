@@ -12,6 +12,10 @@ import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentCre
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentDeleteParams
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListPageAsync
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentResponse
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentResponse
 
 interface DocumentServiceAsync {
 
@@ -65,6 +69,34 @@ interface DocumentServiceAsync {
         params: DocumentDeleteParams,
         requestOptions: RequestOptions = RequestOptions.none(),
     )
+
+    /** Get a single document from a knowledge base. */
+    suspend fun retrieveDocument(
+        docId: String,
+        params: DocumentRetrieveDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): DocumentRetrieveDocumentResponse =
+        retrieveDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+    /** @see retrieveDocument */
+    suspend fun retrieveDocument(
+        params: DocumentRetrieveDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): DocumentRetrieveDocumentResponse
+
+    /** Update a document's title or content. Updating content reprocesses the document for RAG. */
+    suspend fun updateDocument(
+        docId: String,
+        params: DocumentUpdateDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): DocumentUpdateDocumentResponse =
+        updateDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+    /** @see updateDocument */
+    suspend fun updateDocument(
+        params: DocumentUpdateDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): DocumentUpdateDocumentResponse
 
     /**
      * A view of [DocumentServiceAsync] that provides access to raw HTTP responses for each method.
@@ -138,5 +170,45 @@ interface DocumentServiceAsync {
             params: DocumentDeleteParams,
             requestOptions: RequestOptions = RequestOptions.none(),
         ): HttpResponse
+
+        /**
+         * Returns a raw HTTP response for `get
+         * /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}`, but is otherwise
+         * the same as [DocumentServiceAsync.retrieveDocument].
+         */
+        @MustBeClosed
+        suspend fun retrieveDocument(
+            docId: String,
+            params: DocumentRetrieveDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<DocumentRetrieveDocumentResponse> =
+            retrieveDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+        /** @see retrieveDocument */
+        @MustBeClosed
+        suspend fun retrieveDocument(
+            params: DocumentRetrieveDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<DocumentRetrieveDocumentResponse>
+
+        /**
+         * Returns a raw HTTP response for `patch
+         * /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}`, but is otherwise
+         * the same as [DocumentServiceAsync.updateDocument].
+         */
+        @MustBeClosed
+        suspend fun updateDocument(
+            docId: String,
+            params: DocumentUpdateDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<DocumentUpdateDocumentResponse> =
+            updateDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+        /** @see updateDocument */
+        @MustBeClosed
+        suspend fun updateDocument(
+            params: DocumentUpdateDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<DocumentUpdateDocumentResponse>
     }
 }

@@ -16,6 +16,8 @@ import com.zavudev.api.core.http.HttpResponseFor
 import com.zavudev.api.core.http.json
 import com.zavudev.api.core.http.parseable
 import com.zavudev.api.core.prepareAsync
+import com.zavudev.api.models.messages.MessageListAttachmentsParams
+import com.zavudev.api.models.messages.MessageListAttachmentsResponse
 import com.zavudev.api.models.messages.MessageListPageAsync
 import com.zavudev.api.models.messages.MessageListPageResponse
 import com.zavudev.api.models.messages.MessageListParams
@@ -51,6 +53,13 @@ class MessageServiceAsyncImpl internal constructor(private val clientOptions: Cl
     ): MessageListPageAsync =
         // get /v1/messages
         withRawResponse().list(params, requestOptions).parse()
+
+    override suspend fun listAttachments(
+        params: MessageListAttachmentsParams,
+        requestOptions: RequestOptions,
+    ): MessageListAttachmentsResponse =
+        // get /v1/messages/{messageId}/attachments
+        withRawResponse().listAttachments(params, requestOptions).parse()
 
     override suspend fun react(
         params: MessageReactParams,
@@ -146,6 +155,36 @@ class MessageServiceAsyncImpl internal constructor(private val clientOptions: Cl
                             .params(params)
                             .response(it)
                             .build()
+                    }
+            }
+        }
+
+        private val listAttachmentsHandler: Handler<MessageListAttachmentsResponse> =
+            jsonHandler<MessageListAttachmentsResponse>(clientOptions.jsonMapper)
+
+        override suspend fun listAttachments(
+            params: MessageListAttachmentsParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<MessageListAttachmentsResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("messageId", params.messageId())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "messages", params._pathParam(0), "attachments")
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.executeAsync(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { listAttachmentsHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
                     }
             }
         }
