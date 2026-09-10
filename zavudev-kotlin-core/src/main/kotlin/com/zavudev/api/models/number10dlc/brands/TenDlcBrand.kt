@@ -40,6 +40,7 @@ private constructor(
     private val ein: JsonField<String>,
     private val failureReason: JsonField<String>,
     private val firstName: JsonField<String>,
+    private val identityStatus: JsonField<String>,
     private val lastName: JsonField<String>,
     private val stockExchange: JsonField<String>,
     private val stockSymbol: JsonField<String>,
@@ -87,6 +88,9 @@ private constructor(
         @ExcludeMissing
         failureReason: JsonField<String> = JsonMissing.of(),
         @JsonProperty("firstName") @ExcludeMissing firstName: JsonField<String> = JsonMissing.of(),
+        @JsonProperty("identityStatus")
+        @ExcludeMissing
+        identityStatus: JsonField<String> = JsonMissing.of(),
         @JsonProperty("lastName") @ExcludeMissing lastName: JsonField<String> = JsonMissing.of(),
         @JsonProperty("stockExchange")
         @ExcludeMissing
@@ -122,6 +126,7 @@ private constructor(
         ein,
         failureReason,
         firstName,
+        identityStatus,
         lastName,
         stockExchange,
         stockSymbol,
@@ -201,6 +206,14 @@ private constructor(
 
     /**
      * Status of a 10DLC brand registration.
+     * - `draft`: created, not yet submitted to the carrier.
+     * - `pending`: submitted, awaiting the carrier's answer.
+     * - `verified`: the carrier registered the brand AND verified the business behind it.
+     * - `unverified`: the carrier registered the brand but did not verify the business — the
+     *   registration exists, the identity check did not pass or has not been resolved. Campaigns
+     *   are allowed, with lower daily limits. Read `identityStatus` for the carrier's own wording.
+     * - `rejected`: refused by the carrier.
+     * - `failed`: the registration never reached the carrier; the fee is refunded.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
@@ -270,6 +283,17 @@ private constructor(
      *   server responded with an unexpected value).
      */
     fun firstName(): String? = firstName.getNullable("firstName")
+
+    /**
+     * The carrier's raw identity verdict on the business, as the carrier spells it (`VERIFIED`,
+     * `VETTED_VERIFIED`, `SELF_DECLARED`, `UNVERIFIED`). Null while the identity has not been
+     * resolved — which is not the same as verified, and is why such a brand reports `status:
+     * unverified`.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun identityStatus(): String? = identityStatus.getNullable("identityStatus")
 
     /**
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
@@ -459,6 +483,15 @@ private constructor(
     @JsonProperty("firstName") @ExcludeMissing fun _firstName(): JsonField<String> = firstName
 
     /**
+     * Returns the raw JSON value of [identityStatus].
+     *
+     * Unlike [identityStatus], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    @JsonProperty("identityStatus")
+    @ExcludeMissing
+    fun _identityStatus(): JsonField<String> = identityStatus
+
+    /**
      * Returns the raw JSON value of [lastName].
      *
      * Unlike [lastName], this method doesn't throw if the JSON field has an unexpected type.
@@ -567,6 +600,7 @@ private constructor(
         private var ein: JsonField<String> = JsonMissing.of()
         private var failureReason: JsonField<String> = JsonMissing.of()
         private var firstName: JsonField<String> = JsonMissing.of()
+        private var identityStatus: JsonField<String> = JsonMissing.of()
         private var lastName: JsonField<String> = JsonMissing.of()
         private var stockExchange: JsonField<String> = JsonMissing.of()
         private var stockSymbol: JsonField<String> = JsonMissing.of()
@@ -596,6 +630,7 @@ private constructor(
             ein = tenDlcBrand.ein
             failureReason = tenDlcBrand.failureReason
             firstName = tenDlcBrand.firstName
+            identityStatus = tenDlcBrand.identityStatus
             lastName = tenDlcBrand.lastName
             stockExchange = tenDlcBrand.stockExchange
             stockSymbol = tenDlcBrand.stockSymbol
@@ -713,7 +748,18 @@ private constructor(
          */
         fun state(state: JsonField<String>) = apply { this.state = state }
 
-        /** Status of a 10DLC brand registration. */
+        /**
+         * Status of a 10DLC brand registration.
+         * - `draft`: created, not yet submitted to the carrier.
+         * - `pending`: submitted, awaiting the carrier's answer.
+         * - `verified`: the carrier registered the brand AND verified the business behind it.
+         * - `unverified`: the carrier registered the brand but did not verify the business — the
+         *   registration exists, the identity check did not pass or has not been resolved.
+         *   Campaigns are allowed, with lower daily limits. Read `identityStatus` for the carrier's
+         *   own wording.
+         * - `rejected`: refused by the carrier.
+         * - `failed`: the registration never reached the carrier; the fee is refunded.
+         */
         fun status(status: Status) = status(JsonField.of(status))
 
         /**
@@ -836,6 +882,26 @@ private constructor(
          * value.
          */
         fun firstName(firstName: JsonField<String>) = apply { this.firstName = firstName }
+
+        /**
+         * The carrier's raw identity verdict on the business, as the carrier spells it (`VERIFIED`,
+         * `VETTED_VERIFIED`, `SELF_DECLARED`, `UNVERIFIED`). Null while the identity has not been
+         * resolved — which is not the same as verified, and is why such a brand reports `status:
+         * unverified`.
+         */
+        fun identityStatus(identityStatus: String?) =
+            identityStatus(JsonField.ofNullable(identityStatus))
+
+        /**
+         * Sets [Builder.identityStatus] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.identityStatus] with a well-typed [String] value
+         * instead. This method is primarily for setting the field to an undocumented or not yet
+         * supported value.
+         */
+        fun identityStatus(identityStatus: JsonField<String>) = apply {
+            this.identityStatus = identityStatus
+        }
 
         fun lastName(lastName: String?) = lastName(JsonField.ofNullable(lastName))
 
@@ -975,6 +1041,7 @@ private constructor(
                 ein,
                 failureReason,
                 firstName,
+                identityStatus,
                 lastName,
                 stockExchange,
                 stockSymbol,
@@ -1020,6 +1087,7 @@ private constructor(
         ein()
         failureReason()
         firstName()
+        identityStatus()
         lastName()
         stockExchange()
         stockSymbol()
@@ -1063,6 +1131,7 @@ private constructor(
             (if (ein.asKnown() == null) 0 else 1) +
             (if (failureReason.asKnown() == null) 0 else 1) +
             (if (firstName.asKnown() == null) 0 else 1) +
+            (if (identityStatus.asKnown() == null) 0 else 1) +
             (if (lastName.asKnown() == null) 0 else 1) +
             (if (stockExchange.asKnown() == null) 0 else 1) +
             (if (stockSymbol.asKnown() == null) 0 else 1) +
@@ -1225,7 +1294,17 @@ private constructor(
         override fun toString() = value.toString()
     }
 
-    /** Status of a 10DLC brand registration. */
+    /**
+     * Status of a 10DLC brand registration.
+     * - `draft`: created, not yet submitted to the carrier.
+     * - `pending`: submitted, awaiting the carrier's answer.
+     * - `verified`: the carrier registered the brand AND verified the business behind it.
+     * - `unverified`: the carrier registered the brand but did not verify the business — the
+     *   registration exists, the identity check did not pass or has not been resolved. Campaigns
+     *   are allowed, with lower daily limits. Read `identityStatus` for the carrier's own wording.
+     * - `rejected`: refused by the carrier.
+     * - `failed`: the registration never reached the carrier; the fee is refunded.
+     */
     class Status @JsonCreator private constructor(private val value: JsonField<String>) : Enum {
 
         /**
@@ -1246,7 +1325,11 @@ private constructor(
 
             val VERIFIED = of("verified")
 
+            val UNVERIFIED = of("unverified")
+
             val REJECTED = of("rejected")
+
+            val FAILED = of("failed")
 
             fun of(value: String) = Status(JsonField.of(value))
         }
@@ -1256,7 +1339,9 @@ private constructor(
             DRAFT,
             PENDING,
             VERIFIED,
+            UNVERIFIED,
             REJECTED,
+            FAILED,
         }
 
         /**
@@ -1272,7 +1357,9 @@ private constructor(
             DRAFT,
             PENDING,
             VERIFIED,
+            UNVERIFIED,
             REJECTED,
+            FAILED,
             /** An enum member indicating that [Status] was instantiated with an unknown value. */
             _UNKNOWN,
         }
@@ -1289,7 +1376,9 @@ private constructor(
                 DRAFT -> Value.DRAFT
                 PENDING -> Value.PENDING
                 VERIFIED -> Value.VERIFIED
+                UNVERIFIED -> Value.UNVERIFIED
                 REJECTED -> Value.REJECTED
+                FAILED -> Value.FAILED
                 else -> Value._UNKNOWN
             }
 
@@ -1307,7 +1396,9 @@ private constructor(
                 DRAFT -> Known.DRAFT
                 PENDING -> Known.PENDING
                 VERIFIED -> Known.VERIFIED
+                UNVERIFIED -> Known.UNVERIFIED
                 REJECTED -> Known.REJECTED
+                FAILED -> Known.FAILED
                 else -> throw ZavudevInvalidDataException("Unknown Status: $value")
             }
 
@@ -1398,6 +1489,7 @@ private constructor(
             ein == other.ein &&
             failureReason == other.failureReason &&
             firstName == other.firstName &&
+            identityStatus == other.identityStatus &&
             lastName == other.lastName &&
             stockExchange == other.stockExchange &&
             stockSymbol == other.stockSymbol &&
@@ -1429,6 +1521,7 @@ private constructor(
             ein,
             failureReason,
             firstName,
+            identityStatus,
             lastName,
             stockExchange,
             stockSymbol,
@@ -1442,5 +1535,5 @@ private constructor(
     override fun hashCode(): Int = hashCode
 
     override fun toString() =
-        "TenDlcBrand{id=$id, city=$city, country=$country, createdAt=$createdAt, displayName=$displayName, email=$email, entityType=$entityType, phone=$phone, postalCode=$postalCode, state=$state, status=$status, street=$street, updatedAt=$updatedAt, vertical=$vertical, brandRelationship=$brandRelationship, brandScore=$brandScore, companyName=$companyName, ein=$ein, failureReason=$failureReason, firstName=$firstName, lastName=$lastName, stockExchange=$stockExchange, stockSymbol=$stockSymbol, submittedAt=$submittedAt, verifiedAt=$verifiedAt, website=$website, additionalProperties=$additionalProperties}"
+        "TenDlcBrand{id=$id, city=$city, country=$country, createdAt=$createdAt, displayName=$displayName, email=$email, entityType=$entityType, phone=$phone, postalCode=$postalCode, state=$state, status=$status, street=$street, updatedAt=$updatedAt, vertical=$vertical, brandRelationship=$brandRelationship, brandScore=$brandScore, companyName=$companyName, ein=$ein, failureReason=$failureReason, firstName=$firstName, identityStatus=$identityStatus, lastName=$lastName, stockExchange=$stockExchange, stockSymbol=$stockSymbol, submittedAt=$submittedAt, verifiedAt=$verifiedAt, website=$website, additionalProperties=$additionalProperties}"
 }
