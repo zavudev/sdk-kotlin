@@ -3,28 +3,47 @@
 package com.zavudev.api.models.phonenumbers
 
 import com.zavudev.api.core.Params
-import com.zavudev.api.core.checkRequired
 import com.zavudev.api.core.http.Headers
 import com.zavudev.api.core.http.QueryParams
 import java.util.Objects
 
 /**
- * Get regulatory requirements for purchasing phone numbers in a specific country. Some countries
- * require additional documentation (addresses, identity documents) before phone numbers can be
- * activated.
+ * Get the regulatory information needed to buy a phone number, for one specific number or for a
+ * country and number type. Prefer `phoneNumber`: the response is then exactly the list the purchase
+ * of that number validates against. Pass each `requirementTypes[].id` back as `requirementType` in
+ * `regulatoryRequirements` on `POST /v1/phone-numbers`.
+ *
+ * For `phoneNumber`, the requirements of that exact number are returned. When they cannot be
+ * resolved for the number itself, the list for its country and `type` is returned instead, and the
+ * purchase uses the same list. An empty `items` array means the number needs no regulatory
+ * information. If the requirements cannot be retrieved at all, the response is `502
+ * requirements_unavailable`, never an empty list.
+ *
+ * URL-encode the `+` of `phoneNumber` as `%2B`. An unencoded `+` is also accepted.
  */
 class PhoneNumberRequirementsParams
 private constructor(
-    private val countryCode: String,
+    private val countryCode: String?,
+    private val phoneNumber: String?,
     private val type: PhoneNumberType?,
     private val additionalHeaders: Headers,
     private val additionalQueryParams: QueryParams,
 ) : Params {
 
-    /** Two-letter ISO country code. */
-    fun countryCode(): String = countryCode
+    /** Two-letter ISO country code. Required unless `phoneNumber` is given. */
+    fun countryCode(): String? = countryCode
 
-    /** Type of phone number (local, mobile, tollFree). */
+    /**
+     * E.164 number from `GET /v1/phone-numbers/available`, with `+` encoded as `%2B`. Returns the
+     * requirements the purchase of that number checks. Takes precedence over `countryCode`.
+     */
+    fun phoneNumber(): String? = phoneNumber
+
+    /**
+     * Type of phone number (local, national, mobile, tollFree). Defaults to `local`. With
+     * `phoneNumber`, used only when the number's own requirements cannot be resolved and the
+     * country list is returned.
+     */
     fun type(): PhoneNumberType? = type
 
     /** Additional headers to send with the request. */
@@ -37,14 +56,11 @@ private constructor(
 
     companion object {
 
+        fun none(): PhoneNumberRequirementsParams = builder().build()
+
         /**
          * Returns a mutable builder for constructing an instance of
          * [PhoneNumberRequirementsParams].
-         *
-         * The following fields are required:
-         * ```kotlin
-         * .countryCode()
-         * ```
          */
         fun builder() = Builder()
     }
@@ -53,21 +69,33 @@ private constructor(
     class Builder internal constructor() {
 
         private var countryCode: String? = null
+        private var phoneNumber: String? = null
         private var type: PhoneNumberType? = null
         private var additionalHeaders: Headers.Builder = Headers.builder()
         private var additionalQueryParams: QueryParams.Builder = QueryParams.builder()
 
         internal fun from(phoneNumberRequirementsParams: PhoneNumberRequirementsParams) = apply {
             countryCode = phoneNumberRequirementsParams.countryCode
+            phoneNumber = phoneNumberRequirementsParams.phoneNumber
             type = phoneNumberRequirementsParams.type
             additionalHeaders = phoneNumberRequirementsParams.additionalHeaders.toBuilder()
             additionalQueryParams = phoneNumberRequirementsParams.additionalQueryParams.toBuilder()
         }
 
-        /** Two-letter ISO country code. */
-        fun countryCode(countryCode: String) = apply { this.countryCode = countryCode }
+        /** Two-letter ISO country code. Required unless `phoneNumber` is given. */
+        fun countryCode(countryCode: String?) = apply { this.countryCode = countryCode }
 
-        /** Type of phone number (local, mobile, tollFree). */
+        /**
+         * E.164 number from `GET /v1/phone-numbers/available`, with `+` encoded as `%2B`. Returns
+         * the requirements the purchase of that number checks. Takes precedence over `countryCode`.
+         */
+        fun phoneNumber(phoneNumber: String?) = apply { this.phoneNumber = phoneNumber }
+
+        /**
+         * Type of phone number (local, national, mobile, tollFree). Defaults to `local`. With
+         * `phoneNumber`, used only when the number's own requirements cannot be resolved and the
+         * country list is returned.
+         */
         fun type(type: PhoneNumberType?) = apply { this.type = type }
 
         fun additionalHeaders(additionalHeaders: Headers) = apply {
@@ -172,17 +200,11 @@ private constructor(
          * Returns an immutable instance of [PhoneNumberRequirementsParams].
          *
          * Further updates to this [Builder] will not mutate the returned instance.
-         *
-         * The following fields are required:
-         * ```kotlin
-         * .countryCode()
-         * ```
-         *
-         * @throws IllegalStateException if any required field is unset.
          */
         fun build(): PhoneNumberRequirementsParams =
             PhoneNumberRequirementsParams(
-                checkRequired("countryCode", countryCode),
+                countryCode,
+                phoneNumber,
                 type,
                 additionalHeaders.build(),
                 additionalQueryParams.build(),
@@ -194,7 +216,8 @@ private constructor(
     override fun _queryParams(): QueryParams =
         QueryParams.builder()
             .apply {
-                put("countryCode", countryCode)
+                countryCode?.let { put("countryCode", it) }
+                phoneNumber?.let { put("phoneNumber", it) }
                 type?.let { put("type", it.toString()) }
                 putAll(additionalQueryParams)
             }
@@ -207,14 +230,15 @@ private constructor(
 
         return other is PhoneNumberRequirementsParams &&
             countryCode == other.countryCode &&
+            phoneNumber == other.phoneNumber &&
             type == other.type &&
             additionalHeaders == other.additionalHeaders &&
             additionalQueryParams == other.additionalQueryParams
     }
 
     override fun hashCode(): Int =
-        Objects.hash(countryCode, type, additionalHeaders, additionalQueryParams)
+        Objects.hash(countryCode, phoneNumber, type, additionalHeaders, additionalQueryParams)
 
     override fun toString() =
-        "PhoneNumberRequirementsParams{countryCode=$countryCode, type=$type, additionalHeaders=$additionalHeaders, additionalQueryParams=$additionalQueryParams}"
+        "PhoneNumberRequirementsParams{countryCode=$countryCode, phoneNumber=$phoneNumber, type=$type, additionalHeaders=$additionalHeaders, additionalQueryParams=$additionalQueryParams}"
 }
