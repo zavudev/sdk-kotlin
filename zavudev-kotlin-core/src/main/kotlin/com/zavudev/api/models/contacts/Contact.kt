@@ -35,7 +35,6 @@ private constructor(
     private val primaryEmail: JsonField<String>,
     private val primaryPhone: JsonField<String>,
     private val profileName: JsonField<String>,
-    private val suggestedMergeWith: JsonField<String>,
     private val updatedAt: JsonField<OffsetDateTime>,
     private val additionalProperties: MutableMap<String, JsonValue>,
 ) {
@@ -75,9 +74,6 @@ private constructor(
         @JsonProperty("profileName")
         @ExcludeMissing
         profileName: JsonField<String> = JsonMissing.of(),
-        @JsonProperty("suggestedMergeWith")
-        @ExcludeMissing
-        suggestedMergeWith: JsonField<String> = JsonMissing.of(),
         @JsonProperty("updatedAt")
         @ExcludeMissing
         updatedAt: JsonField<OffsetDateTime> = JsonMissing.of(),
@@ -95,7 +91,6 @@ private constructor(
         primaryEmail,
         primaryPhone,
         profileName,
-        suggestedMergeWith,
         updatedAt,
         mutableMapOf(),
     )
@@ -195,14 +190,6 @@ private constructor(
      *   server responded with an unexpected value).
      */
     fun profileName(): String? = profileName.getNullable("profileName")
-
-    /**
-     * ID of a contact suggested for merging.
-     *
-     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
-     *   server responded with an unexpected value).
-     */
-    fun suggestedMergeWith(): String? = suggestedMergeWith.getNullable("suggestedMergeWith")
 
     /**
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
@@ -315,16 +302,6 @@ private constructor(
     @JsonProperty("profileName") @ExcludeMissing fun _profileName(): JsonField<String> = profileName
 
     /**
-     * Returns the raw JSON value of [suggestedMergeWith].
-     *
-     * Unlike [suggestedMergeWith], this method doesn't throw if the JSON field has an unexpected
-     * type.
-     */
-    @JsonProperty("suggestedMergeWith")
-    @ExcludeMissing
-    fun _suggestedMergeWith(): JsonField<String> = suggestedMergeWith
-
-    /**
      * Returns the raw JSON value of [updatedAt].
      *
      * Unlike [updatedAt], this method doesn't throw if the JSON field has an unexpected type.
@@ -378,7 +355,6 @@ private constructor(
         private var primaryEmail: JsonField<String> = JsonMissing.of()
         private var primaryPhone: JsonField<String> = JsonMissing.of()
         private var profileName: JsonField<String> = JsonMissing.of()
-        private var suggestedMergeWith: JsonField<String> = JsonMissing.of()
         private var updatedAt: JsonField<OffsetDateTime> = JsonMissing.of()
         private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
 
@@ -396,7 +372,6 @@ private constructor(
             primaryEmail = contact.primaryEmail
             primaryPhone = contact.primaryPhone
             profileName = contact.profileName
-            suggestedMergeWith = contact.suggestedMergeWith
             updatedAt = contact.updatedAt
             additionalProperties = contact.additionalProperties.toMutableMap()
         }
@@ -588,21 +563,6 @@ private constructor(
          */
         fun profileName(profileName: JsonField<String>) = apply { this.profileName = profileName }
 
-        /** ID of a contact suggested for merging. */
-        fun suggestedMergeWith(suggestedMergeWith: String) =
-            suggestedMergeWith(JsonField.of(suggestedMergeWith))
-
-        /**
-         * Sets [Builder.suggestedMergeWith] to an arbitrary JSON value.
-         *
-         * You should usually call [Builder.suggestedMergeWith] with a well-typed [String] value
-         * instead. This method is primarily for setting the field to an undocumented or not yet
-         * supported value.
-         */
-        fun suggestedMergeWith(suggestedMergeWith: JsonField<String>) = apply {
-            this.suggestedMergeWith = suggestedMergeWith
-        }
-
         fun updatedAt(updatedAt: OffsetDateTime) = updatedAt(JsonField.of(updatedAt))
 
         /**
@@ -664,7 +624,6 @@ private constructor(
                 primaryEmail,
                 primaryPhone,
                 profileName,
-                suggestedMergeWith,
                 updatedAt,
                 additionalProperties.toMutableMap(),
             )
@@ -698,7 +657,6 @@ private constructor(
         primaryEmail()
         primaryPhone()
         profileName()
-        suggestedMergeWith()
         updatedAt()
         validated = true
     }
@@ -730,7 +688,6 @@ private constructor(
             (if (primaryEmail.asKnown() == null) 0 else 1) +
             (if (primaryPhone.asKnown() == null) 0 else 1) +
             (if (profileName.asKnown() == null) 0 else 1) +
-            (if (suggestedMergeWith.asKnown() == null) 0 else 1) +
             (if (updatedAt.asKnown() == null) 0 else 1)
 
     class Metadata
@@ -1027,7 +984,6 @@ private constructor(
             primaryEmail == other.primaryEmail &&
             primaryPhone == other.primaryPhone &&
             profileName == other.profileName &&
-            suggestedMergeWith == other.suggestedMergeWith &&
             updatedAt == other.updatedAt &&
             additionalProperties == other.additionalProperties
     }
@@ -1047,7 +1003,6 @@ private constructor(
             primaryEmail,
             primaryPhone,
             profileName,
-            suggestedMergeWith,
             updatedAt,
             additionalProperties,
         )
@@ -1056,5 +1011,5 @@ private constructor(
     override fun hashCode(): Int = hashCode
 
     override fun toString() =
-        "Contact{id=$id, availableChannels=$availableChannels, createdAt=$createdAt, metadata=$metadata, verified=$verified, channels=$channels, countryCode=$countryCode, defaultChannel=$defaultChannel, displayName=$displayName, phoneNumber=$phoneNumber, primaryEmail=$primaryEmail, primaryPhone=$primaryPhone, profileName=$profileName, suggestedMergeWith=$suggestedMergeWith, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
+        "Contact{id=$id, availableChannels=$availableChannels, createdAt=$createdAt, metadata=$metadata, verified=$verified, channels=$channels, countryCode=$countryCode, defaultChannel=$defaultChannel, displayName=$displayName, phoneNumber=$phoneNumber, primaryEmail=$primaryEmail, primaryPhone=$primaryPhone, profileName=$profileName, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
 }

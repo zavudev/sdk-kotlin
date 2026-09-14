@@ -23,6 +23,10 @@ import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentDel
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListPageAsync
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListPageResponse
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentResponse
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentResponse
 
 class DocumentServiceAsyncImpl internal constructor(private val clientOptions: ClientOptions) :
     DocumentServiceAsync {
@@ -54,6 +58,20 @@ class DocumentServiceAsyncImpl internal constructor(private val clientOptions: C
         // delete /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}
         withRawResponse().delete(params, requestOptions)
     }
+
+    override suspend fun retrieveDocument(
+        params: DocumentRetrieveDocumentParams,
+        requestOptions: RequestOptions,
+    ): DocumentRetrieveDocumentResponse =
+        // get /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}
+        withRawResponse().retrieveDocument(params, requestOptions).parse()
+
+    override suspend fun updateDocument(
+        params: DocumentUpdateDocumentParams,
+        requestOptions: RequestOptions,
+    ): DocumentUpdateDocumentResponse =
+        // patch /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}
+        withRawResponse().updateDocument(params, requestOptions).parse()
 
     class WithRawResponseImpl internal constructor(private val clientOptions: ClientOptions) :
         DocumentServiceAsync.WithRawResponse {
@@ -182,6 +200,85 @@ class DocumentServiceAsyncImpl internal constructor(private val clientOptions: C
             val response = clientOptions.httpClient.executeAsync(request, requestOptions)
             return errorHandler.handle(response).parseable {
                 response.use { deleteHandler.handle(it) }
+            }
+        }
+
+        private val retrieveDocumentHandler: Handler<DocumentRetrieveDocumentResponse> =
+            jsonHandler<DocumentRetrieveDocumentResponse>(clientOptions.jsonMapper)
+
+        override suspend fun retrieveDocument(
+            params: DocumentRetrieveDocumentParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<DocumentRetrieveDocumentResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("docId", params.docId())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments(
+                        "v1",
+                        "senders",
+                        params._pathParam(0),
+                        "agent",
+                        "knowledge-bases",
+                        params._pathParam(1),
+                        "documents",
+                        params._pathParam(2),
+                    )
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.executeAsync(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { retrieveDocumentHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
+            }
+        }
+
+        private val updateDocumentHandler: Handler<DocumentUpdateDocumentResponse> =
+            jsonHandler<DocumentUpdateDocumentResponse>(clientOptions.jsonMapper)
+
+        override suspend fun updateDocument(
+            params: DocumentUpdateDocumentParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<DocumentUpdateDocumentResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("docId", params.docId())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.PATCH)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments(
+                        "v1",
+                        "senders",
+                        params._pathParam(0),
+                        "agent",
+                        "knowledge-bases",
+                        params._pathParam(1),
+                        "documents",
+                        params._pathParam(2),
+                    )
+                    .body(json(clientOptions.jsonMapper, params._body()))
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.executeAsync(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { updateDocumentHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
             }
         }
     }

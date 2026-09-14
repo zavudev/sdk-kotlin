@@ -6,6 +6,8 @@ import com.zavudev.api.client.okhttp.ZavudevOkHttpClientAsync
 import com.zavudev.api.core.JsonValue
 import com.zavudev.api.models.functions.FunctionCreateParams
 import com.zavudev.api.models.functions.FunctionDeployParams
+import com.zavudev.api.models.functions.FunctionListDeploymentsParams
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentParams
 import com.zavudev.api.models.functions.FunctionTailLogsParams
 import com.zavudev.api.models.functions.FunctionUpdateParams
 import org.junit.jupiter.api.Disabled
@@ -30,6 +32,23 @@ internal class FunctionServiceAsyncTest {
                             .build()
                     )
                     .description("Replies to order status questions on WhatsApp.")
+                    .entrypoint("index.ts")
+                    .files(
+                        FunctionCreateParams.Files.builder()
+                            .putAdditionalProperty(
+                                "index.ts",
+                                JsonValue.from(
+                                    "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                                ),
+                            )
+                            .putAdditionalProperty(
+                                "lib/orders.ts",
+                                JsonValue.from(
+                                    "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                                ),
+                            )
+                            .build()
+                    )
                     .httpEnabled(true)
                     .memoryMb(FunctionCreateParams.MemoryMb._128)
                     .runtime(FunctionCreateParams.Runtime.NODEJS24)
@@ -69,6 +88,23 @@ internal class FunctionServiceAsyncTest {
                             .putAdditionalProperty("foo", JsonValue.from("string"))
                             .build()
                     )
+                    .entrypoint("index.ts")
+                    .files(
+                        FunctionUpdateParams.Files.builder()
+                            .putAdditionalProperty(
+                                "index.ts",
+                                JsonValue.from(
+                                    "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                                ),
+                            )
+                            .putAdditionalProperty(
+                                "lib/orders.ts",
+                                JsonValue.from(
+                                    "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                                ),
+                            )
+                            .build()
+                    )
                     .httpEnabled(true)
                     .sourceCode("sourceCode")
                     .build()
@@ -103,6 +139,23 @@ internal class FunctionServiceAsyncTest {
                             .putAdditionalProperty("foo", JsonValue.from("string"))
                             .build()
                     )
+                    .entrypoint("index.ts")
+                    .files(
+                        FunctionDeployParams.Files.builder()
+                            .putAdditionalProperty(
+                                "index.ts",
+                                JsonValue.from(
+                                    "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                                ),
+                            )
+                            .putAdditionalProperty(
+                                "lib/orders.ts",
+                                JsonValue.from(
+                                    "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                                ),
+                            )
+                            .build()
+                    )
                     .sourceCode("sourceCode")
                     .build()
             )
@@ -117,6 +170,48 @@ internal class FunctionServiceAsyncTest {
         val functionServiceAsync = client.functions()
 
         val response = functionServiceAsync.getDeployment("deploymentId")
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    suspend fun listDeployments() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val functionServiceAsync = client.functions()
+
+        val response =
+            functionServiceAsync.listDeployments(
+                FunctionListDeploymentsParams.builder().functionId("functionId").limit(100L).build()
+            )
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    suspend fun listEventTypes() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val functionServiceAsync = client.functions()
+
+        val response = functionServiceAsync.listEventTypes()
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    suspend fun rollbackDeployment() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val functionServiceAsync = client.functions()
+
+        val response =
+            functionServiceAsync.rollbackDeployment(
+                FunctionRollbackDeploymentParams.builder()
+                    .functionId("functionId")
+                    .deploymentId("fnd_abc123")
+                    .build()
+            )
 
         response.validate()
     }

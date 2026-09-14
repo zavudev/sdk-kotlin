@@ -23,6 +23,7 @@ import com.zavudev.api.models.senders.SenderUploadProfilePictureResponse
 import com.zavudev.api.models.senders.WebhookSecretResponse
 import com.zavudev.api.models.senders.WhatsappBusinessProfileResponse
 import com.zavudev.api.services.async.senders.AgentServiceAsync
+import com.zavudev.api.services.async.senders.TelegramServiceAsync
 import com.zavudev.api.services.async.senders.WhatsappSyncServiceAsync
 
 interface SenderServiceAsync {
@@ -42,6 +43,8 @@ interface SenderServiceAsync {
     fun agent(): AgentServiceAsync
 
     fun whatsappSync(): WhatsappSyncServiceAsync
+
+    fun telegram(): TelegramServiceAsync
 
     /** Create sender */
     suspend fun create(
@@ -219,6 +222,8 @@ interface SenderServiceAsync {
         fun agent(): AgentServiceAsync.WithRawResponse
 
         fun whatsappSync(): WhatsappSyncServiceAsync.WithRawResponse
+
+        fun telegram(): TelegramServiceAsync.WithRawResponse
 
         /**
          * Returns a raw HTTP response for `post /v1/senders`, but is otherwise the same as

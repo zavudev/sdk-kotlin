@@ -4,9 +4,14 @@ package com.zavudev.api.client
 
 import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.services.async.AddressServiceAsync
+import com.zavudev.api.services.async.AgentServiceAsync
+import com.zavudev.api.services.async.AgentTemplateServiceAsync
 import com.zavudev.api.services.async.BalanceServiceAsync
 import com.zavudev.api.services.async.BroadcastServiceAsync
+import com.zavudev.api.services.async.CallServiceAsync
 import com.zavudev.api.services.async.ContactServiceAsync
+import com.zavudev.api.services.async.ConversationServiceAsync
+import com.zavudev.api.services.async.EmailDomainServiceAsync
 import com.zavudev.api.services.async.FunctionServiceAsync
 import com.zavudev.api.services.async.IntrospectServiceAsync
 import com.zavudev.api.services.async.InvitationServiceAsync
@@ -88,6 +93,16 @@ interface ZavudevClientAsync {
 
     fun functions(): FunctionServiceAsync
 
+    fun conversations(): ConversationServiceAsync
+
+    fun calls(): CallServiceAsync
+
+    fun agentTemplates(): AgentTemplateServiceAsync
+
+    fun emailDomains(): EmailDomainServiceAsync
+
+    fun agents(): AgentServiceAsync
+
     /**
      * Closes this client, relinquishing any underlying resources.
      *
@@ -146,5 +161,15 @@ interface ZavudevClientAsync {
         fun me(): MeServiceAsync.WithRawResponse
 
         fun functions(): FunctionServiceAsync.WithRawResponse
+
+        fun conversations(): ConversationServiceAsync.WithRawResponse
+
+        fun calls(): CallServiceAsync.WithRawResponse
+
+        fun agentTemplates(): AgentTemplateServiceAsync.WithRawResponse
+
+        fun emailDomains(): EmailDomainServiceAsync.WithRawResponse
+
+        fun agents(): AgentServiceAsync.WithRawResponse
     }
 }

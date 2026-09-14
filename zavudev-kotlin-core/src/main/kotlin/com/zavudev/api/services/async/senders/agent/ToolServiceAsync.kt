@@ -12,12 +12,15 @@ import com.zavudev.api.models.senders.agent.tools.ToolCreateResponse
 import com.zavudev.api.models.senders.agent.tools.ToolDeleteParams
 import com.zavudev.api.models.senders.agent.tools.ToolListPageAsync
 import com.zavudev.api.models.senders.agent.tools.ToolListParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsResponse
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveParams
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveResponse
 import com.zavudev.api.models.senders.agent.tools.ToolTestParams
 import com.zavudev.api.models.senders.agent.tools.ToolTestResponse
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateParams
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateResponse
+import com.zavudev.api.services.async.senders.agent.tools.WebhookServiceAsync
 
 interface ToolServiceAsync {
 
@@ -32,6 +35,8 @@ interface ToolServiceAsync {
      * The original service is not modified.
      */
     fun withOptions(modifier: (ClientOptions.Builder) -> Unit): ToolServiceAsync
+
+    fun webhook(): WebhookServiceAsync
 
     /** Create a new tool for an agent. Tools allow the agent to call external webhooks. */
     suspend fun create(
@@ -103,6 +108,23 @@ interface ToolServiceAsync {
     )
 
     /**
+     * Recent runs of this tool triggered from the test endpoint, newest first. Covers manual tests
+     * only: a tool called by an agent during a real conversation is not recorded here.
+     */
+    suspend fun listTestRuns(
+        toolId: String,
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): ToolListTestRunsResponse =
+        listTestRuns(params.toBuilder().toolId(toolId).build(), requestOptions)
+
+    /** @see listTestRuns */
+    suspend fun listTestRuns(
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): ToolListTestRunsResponse
+
+    /**
      * Run a tool with the parameters you supply and return what it answered.
      *
      * The call is synchronous: the response carries the tool's status, body, and duration, so a
@@ -135,6 +157,8 @@ interface ToolServiceAsync {
          * The original service is not modified.
          */
         fun withOptions(modifier: (ClientOptions.Builder) -> Unit): ToolServiceAsync.WithRawResponse
+
+        fun webhook(): WebhookServiceAsync.WithRawResponse
 
         /**
          * Returns a raw HTTP response for `post /v1/senders/{senderId}/agent/tools`, but is
@@ -237,6 +261,26 @@ interface ToolServiceAsync {
             params: ToolDeleteParams,
             requestOptions: RequestOptions = RequestOptions.none(),
         ): HttpResponse
+
+        /**
+         * Returns a raw HTTP response for `get
+         * /v1/senders/{senderId}/agent/tools/{toolId}/test-runs`, but is otherwise the same as
+         * [ToolServiceAsync.listTestRuns].
+         */
+        @MustBeClosed
+        suspend fun listTestRuns(
+            toolId: String,
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<ToolListTestRunsResponse> =
+            listTestRuns(params.toBuilder().toolId(toolId).build(), requestOptions)
+
+        /** @see listTestRuns */
+        @MustBeClosed
+        suspend fun listTestRuns(
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<ToolListTestRunsResponse>
 
         /**
          * Returns a raw HTTP response for `post /v1/senders/{senderId}/agent/tools/{toolId}/test`,

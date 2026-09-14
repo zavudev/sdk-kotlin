@@ -27,9 +27,9 @@ configure<PublishingExtension> {
                 }
 
                 scm {
-                    connection.set("scm:git:git://github.com/stainless-sdks/zavudev-kotlin.git")
-                    developerConnection.set("scm:git:git://github.com/stainless-sdks/zavudev-kotlin.git")
-                    url.set("https://github.com/stainless-sdks/zavudev-kotlin")
+                    connection.set("scm:git:git://github.com/zavudev/sdk-kotlin.git")
+                    developerConnection.set("scm:git:git://github.com/zavudev/sdk-kotlin.git")
+                    url.set("https://github.com/zavudev/sdk-kotlin")
                 }
 
                 versionMapping {

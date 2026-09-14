@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.zavudev.api.core.Enum
 import com.zavudev.api.core.ExcludeMissing
 import com.zavudev.api.core.JsonField
 import com.zavudev.api.core.JsonMissing
@@ -23,6 +24,7 @@ private constructor(
     private val id: JsonField<String>,
     private val channel: JsonField<Channel>,
     private val createdAt: JsonField<OffsetDateTime>,
+    private val direction: JsonField<Direction>,
     private val messageType: JsonField<MessageType>,
     private val status: JsonField<MessageStatus>,
     private val to: JsonField<String>,
@@ -49,6 +51,9 @@ private constructor(
         @JsonProperty("createdAt")
         @ExcludeMissing
         createdAt: JsonField<OffsetDateTime> = JsonMissing.of(),
+        @JsonProperty("direction")
+        @ExcludeMissing
+        direction: JsonField<Direction> = JsonMissing.of(),
         @JsonProperty("messageType")
         @ExcludeMissing
         messageType: JsonField<MessageType> = JsonMissing.of(),
@@ -83,6 +88,7 @@ private constructor(
         id,
         channel,
         createdAt,
+        direction,
         messageType,
         status,
         to,
@@ -121,6 +127,15 @@ private constructor(
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
      */
     fun createdAt(): OffsetDateTime = createdAt.getRequired("createdAt")
+
+    /**
+     * Who sent the message. Needed to render a thread: `status` cannot tell the two apart, because
+     * an inbound message is also stored as `delivered`.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
+     *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
+     */
+    fun direction(): Direction = direction.getRequired("direction")
 
     /**
      * Type of message. Non-text types are supported by WhatsApp and Telegram (varies by type).
@@ -273,6 +288,13 @@ private constructor(
     fun _createdAt(): JsonField<OffsetDateTime> = createdAt
 
     /**
+     * Returns the raw JSON value of [direction].
+     *
+     * Unlike [direction], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    @JsonProperty("direction") @ExcludeMissing fun _direction(): JsonField<Direction> = direction
+
+    /**
      * Returns the raw JSON value of [messageType].
      *
      * Unlike [messageType], this method doesn't throw if the JSON field has an unexpected type.
@@ -419,6 +441,7 @@ private constructor(
          * .id()
          * .channel()
          * .createdAt()
+         * .direction()
          * .messageType()
          * .status()
          * .to()
@@ -433,6 +456,7 @@ private constructor(
         private var id: JsonField<String>? = null
         private var channel: JsonField<Channel>? = null
         private var createdAt: JsonField<OffsetDateTime>? = null
+        private var direction: JsonField<Direction>? = null
         private var messageType: JsonField<MessageType>? = null
         private var status: JsonField<MessageStatus>? = null
         private var to: JsonField<String>? = null
@@ -455,6 +479,7 @@ private constructor(
             id = message.id
             channel = message.channel
             createdAt = message.createdAt
+            direction = message.direction
             messageType = message.messageType
             status = message.status
             to = message.to
@@ -505,6 +530,21 @@ private constructor(
          * supported value.
          */
         fun createdAt(createdAt: JsonField<OffsetDateTime>) = apply { this.createdAt = createdAt }
+
+        /**
+         * Who sent the message. Needed to render a thread: `status` cannot tell the two apart,
+         * because an inbound message is also stored as `delivered`.
+         */
+        fun direction(direction: Direction) = direction(JsonField.of(direction))
+
+        /**
+         * Sets [Builder.direction] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.direction] with a well-typed [Direction] value instead.
+         * This method is primarily for setting the field to an undocumented or not yet supported
+         * value.
+         */
+        fun direction(direction: JsonField<Direction>) = apply { this.direction = direction }
 
         /**
          * Type of message. Non-text types are supported by WhatsApp and Telegram (varies by type).
@@ -768,6 +808,7 @@ private constructor(
          * .id()
          * .channel()
          * .createdAt()
+         * .direction()
          * .messageType()
          * .status()
          * .to()
@@ -780,6 +821,7 @@ private constructor(
                 checkRequired("id", id),
                 checkRequired("channel", channel),
                 checkRequired("createdAt", createdAt),
+                checkRequired("direction", direction),
                 checkRequired("messageType", messageType),
                 checkRequired("status", status),
                 checkRequired("to", to),
@@ -818,6 +860,7 @@ private constructor(
         id()
         channel().validate()
         createdAt()
+        direction().validate()
         messageType().validate()
         status().validate()
         to()
@@ -854,6 +897,7 @@ private constructor(
         (if (id.asKnown() == null) 0 else 1) +
             (channel.asKnown()?.validity() ?: 0) +
             (if (createdAt.asKnown() == null) 0 else 1) +
+            (direction.asKnown()?.validity() ?: 0) +
             (messageType.asKnown()?.validity() ?: 0) +
             (status.asKnown()?.validity() ?: 0) +
             (if (to.asKnown() == null) 0 else 1) +
@@ -870,6 +914,146 @@ private constructor(
             (if (senderId.asKnown() == null) 0 else 1) +
             (if (text.asKnown() == null) 0 else 1) +
             (if (updatedAt.asKnown() == null) 0 else 1)
+
+    /**
+     * Who sent the message. Needed to render a thread: `status` cannot tell the two apart, because
+     * an inbound message is also stored as `delivered`.
+     */
+    class Direction @JsonCreator private constructor(private val value: JsonField<String>) : Enum {
+
+        /**
+         * Returns this class instance's raw value.
+         *
+         * This is usually only useful if this instance was deserialized from data that doesn't
+         * match any known member, and you want to know that value. For example, if the SDK is on an
+         * older version than the API, then the API may respond with new members that the SDK is
+         * unaware of.
+         */
+        @com.fasterxml.jackson.annotation.JsonValue fun _value(): JsonField<String> = value
+
+        companion object {
+
+            val INBOUND = of("inbound")
+
+            val OUTBOUND = of("outbound")
+
+            fun of(value: String) = Direction(JsonField.of(value))
+        }
+
+        /** An enum containing [Direction]'s known values. */
+        enum class Known {
+            INBOUND,
+            OUTBOUND,
+        }
+
+        /**
+         * An enum containing [Direction]'s known values, as well as an [_UNKNOWN] member.
+         *
+         * An instance of [Direction] can contain an unknown value in a couple of cases:
+         * - It was deserialized from data that doesn't match any known member. For example, if the
+         *   SDK is on an older version than the API, then the API may respond with new members that
+         *   the SDK is unaware of.
+         * - It was constructed with an arbitrary value using the [of] method.
+         */
+        enum class Value {
+            INBOUND,
+            OUTBOUND,
+            /**
+             * An enum member indicating that [Direction] was instantiated with an unknown value.
+             */
+            _UNKNOWN,
+        }
+
+        /**
+         * Returns an enum member corresponding to this class instance's value, or [Value._UNKNOWN]
+         * if the class was instantiated with an unknown value.
+         *
+         * Use the [known] method instead if you're certain the value is always known or if you want
+         * to throw for the unknown case.
+         */
+        fun value(): Value =
+            when (this) {
+                INBOUND -> Value.INBOUND
+                OUTBOUND -> Value.OUTBOUND
+                else -> Value._UNKNOWN
+            }
+
+        /**
+         * Returns an enum member corresponding to this class instance's value.
+         *
+         * Use the [value] method instead if you're uncertain the value is always known and don't
+         * want to throw for the unknown case.
+         *
+         * @throws ZavudevInvalidDataException if this class instance's value is a not a known
+         *   member.
+         */
+        fun known(): Known =
+            when (this) {
+                INBOUND -> Known.INBOUND
+                OUTBOUND -> Known.OUTBOUND
+                else -> throw ZavudevInvalidDataException("Unknown Direction: $value")
+            }
+
+        /**
+         * Returns this class instance's primitive wire representation.
+         *
+         * This differs from the [toString] method because that method is primarily for debugging
+         * and generally doesn't throw.
+         *
+         * @throws ZavudevInvalidDataException if this class instance's value does not have the
+         *   expected primitive type.
+         */
+        fun asString(): String =
+            _value().asString() ?: throw ZavudevInvalidDataException("Value is not a String")
+
+        private var validated: Boolean = false
+
+        /**
+         * Validates that the types of all values in this object match their expected types
+         * recursively.
+         *
+         * This method is _not_ forwards compatible with new types from the API for existing fields.
+         *
+         * @throws ZavudevInvalidDataException if any value type in this object doesn't match its
+         *   expected type.
+         */
+        fun validate(): Direction = apply {
+            if (validated) {
+                return@apply
+            }
+
+            known()
+            validated = true
+        }
+
+        fun isValid(): Boolean =
+            try {
+                validate()
+                true
+            } catch (e: ZavudevInvalidDataException) {
+                false
+            }
+
+        /**
+         * Returns a score indicating how many valid values are contained in this object
+         * recursively.
+         *
+         * Used for best match union deserialization.
+         */
+        internal fun validity(): Int = if (value() == Value._UNKNOWN) 0 else 1
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
+                return true
+            }
+
+            return other is Direction && value == other.value
+        }
+
+        override fun hashCode() = value.hashCode()
+
+        override fun toString() = value.toString()
+    }
 
     class Metadata
     @JsonCreator
@@ -986,6 +1170,7 @@ private constructor(
             id == other.id &&
             channel == other.channel &&
             createdAt == other.createdAt &&
+            direction == other.direction &&
             messageType == other.messageType &&
             status == other.status &&
             to == other.to &&
@@ -1010,6 +1195,7 @@ private constructor(
             id,
             channel,
             createdAt,
+            direction,
             messageType,
             status,
             to,
@@ -1033,5 +1219,5 @@ private constructor(
     override fun hashCode(): Int = hashCode
 
     override fun toString() =
-        "Message{id=$id, channel=$channel, createdAt=$createdAt, messageType=$messageType, status=$status, to=$to, content=$content, conversationId=$conversationId, cost=$cost, costProvider=$costProvider, costTotal=$costTotal, errorCode=$errorCode, errorMessage=$errorMessage, from=$from, metadata=$metadata, providerMessageId=$providerMessageId, senderId=$senderId, text=$text, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
+        "Message{id=$id, channel=$channel, createdAt=$createdAt, direction=$direction, messageType=$messageType, status=$status, to=$to, content=$content, conversationId=$conversationId, cost=$cost, costProvider=$costProvider, costTotal=$costTotal, errorCode=$errorCode, errorMessage=$errorMessage, from=$from, metadata=$metadata, providerMessageId=$providerMessageId, senderId=$senderId, text=$text, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
 }

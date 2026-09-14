@@ -10,7 +10,6 @@ import com.zavudev.api.core.http.HttpResponseFor
 import com.zavudev.api.models.contacts.Contact
 import com.zavudev.api.models.contacts.ContactCreateParams
 import com.zavudev.api.models.contacts.ContactDeleteParams
-import com.zavudev.api.models.contacts.ContactDismissMergeSuggestionParams
 import com.zavudev.api.models.contacts.ContactListPageAsync
 import com.zavudev.api.models.contacts.ContactListParams
 import com.zavudev.api.models.contacts.ContactMergeParams
@@ -107,27 +106,6 @@ interface ContactServiceAsync {
     /** @see delete */
     suspend fun delete(contactId: String, requestOptions: RequestOptions) =
         delete(contactId, ContactDeleteParams.none(), requestOptions)
-
-    /** Dismiss the merge suggestion for a contact. */
-    suspend fun dismissMergeSuggestion(
-        contactId: String,
-        params: ContactDismissMergeSuggestionParams = ContactDismissMergeSuggestionParams.none(),
-        requestOptions: RequestOptions = RequestOptions.none(),
-    ) = dismissMergeSuggestion(params.toBuilder().contactId(contactId).build(), requestOptions)
-
-    /** @see dismissMergeSuggestion */
-    suspend fun dismissMergeSuggestion(
-        params: ContactDismissMergeSuggestionParams,
-        requestOptions: RequestOptions = RequestOptions.none(),
-    )
-
-    /** @see dismissMergeSuggestion */
-    suspend fun dismissMergeSuggestion(contactId: String, requestOptions: RequestOptions) =
-        dismissMergeSuggestion(
-            contactId,
-            ContactDismissMergeSuggestionParams.none(),
-            requestOptions,
-        )
 
     /**
      * Merge a source contact into this contact. All channels from the source contact will be moved
@@ -279,38 +257,6 @@ interface ContactServiceAsync {
         @MustBeClosed
         suspend fun delete(contactId: String, requestOptions: RequestOptions): HttpResponse =
             delete(contactId, ContactDeleteParams.none(), requestOptions)
-
-        /**
-         * Returns a raw HTTP response for `delete /v1/contacts/{contactId}/merge-suggestion`, but
-         * is otherwise the same as [ContactServiceAsync.dismissMergeSuggestion].
-         */
-        @MustBeClosed
-        suspend fun dismissMergeSuggestion(
-            contactId: String,
-            params: ContactDismissMergeSuggestionParams =
-                ContactDismissMergeSuggestionParams.none(),
-            requestOptions: RequestOptions = RequestOptions.none(),
-        ): HttpResponse =
-            dismissMergeSuggestion(params.toBuilder().contactId(contactId).build(), requestOptions)
-
-        /** @see dismissMergeSuggestion */
-        @MustBeClosed
-        suspend fun dismissMergeSuggestion(
-            params: ContactDismissMergeSuggestionParams,
-            requestOptions: RequestOptions = RequestOptions.none(),
-        ): HttpResponse
-
-        /** @see dismissMergeSuggestion */
-        @MustBeClosed
-        suspend fun dismissMergeSuggestion(
-            contactId: String,
-            requestOptions: RequestOptions,
-        ): HttpResponse =
-            dismissMergeSuggestion(
-                contactId,
-                ContactDismissMergeSuggestionParams.none(),
-                requestOptions,
-            )
 
         /**
          * Returns a raw HTTP response for `post /v1/contacts/{contactId}/merge`, but is otherwise
