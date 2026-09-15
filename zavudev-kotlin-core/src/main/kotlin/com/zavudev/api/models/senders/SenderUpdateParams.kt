@@ -68,7 +68,9 @@ private constructor(
     fun emailFromName(): String? = body.emailFromName()
 
     /**
-     * Enable or disable inbound email receiving for this sender.
+     * Enable or disable inbound email receiving for this sender. Enabling requires a verified
+     * inbound MX record on the domain; the request is ignored otherwise, and
+     * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -360,7 +362,11 @@ private constructor(
             body.emailFromName(emailFromName)
         }
 
-        /** Enable or disable inbound email receiving for this sender. */
+        /**
+         * Enable or disable inbound email receiving for this sender. Enabling requires a verified
+         * inbound MX record on the domain; the request is ignored otherwise, and
+         * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
+         */
         fun emailReceivingEnabled(emailReceivingEnabled: Boolean) = apply {
             body.emailReceivingEnabled(emailReceivingEnabled)
         }
@@ -771,7 +777,9 @@ private constructor(
         fun emailFromName(): String? = emailFromName.getNullable("emailFromName")
 
         /**
-         * Enable or disable inbound email receiving for this sender.
+         * Enable or disable inbound email receiving for this sender. Enabling requires a verified
+         * inbound MX record on the domain; the request is ignored otherwise, and
+         * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -1100,7 +1108,11 @@ private constructor(
                 this.emailFromName = emailFromName
             }
 
-            /** Enable or disable inbound email receiving for this sender. */
+            /**
+             * Enable or disable inbound email receiving for this sender. Enabling requires a
+             * verified inbound MX record on the domain; the request is ignored otherwise, and
+             * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
+             */
             fun emailReceivingEnabled(emailReceivingEnabled: Boolean) =
                 emailReceivingEnabled(JsonField.of(emailReceivingEnabled))
 
