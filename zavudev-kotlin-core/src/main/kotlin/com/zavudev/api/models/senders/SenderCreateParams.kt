@@ -63,8 +63,9 @@ private constructor(
     fun emailFromName(): String? = body.emailFromName()
 
     /**
-     * Enable inbound email receiving on this sender. Requires a verified MX record on the domain;
-     * ignored otherwise.
+     * Enable inbound email receiving on this sender. Requires a verified inbound MX record on the
+     * domain; the request is ignored otherwise. Read `emailReceivingEnabled` back off the response
+     * to see whether it was applied — it comes back `false` when the MX has not verified.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -339,8 +340,10 @@ private constructor(
         }
 
         /**
-         * Enable inbound email receiving on this sender. Requires a verified MX record on the
-         * domain; ignored otherwise.
+         * Enable inbound email receiving on this sender. Requires a verified inbound MX record on
+         * the domain; the request is ignored otherwise. Read `emailReceivingEnabled` back off the
+         * response to see whether it was applied — it comes back `false` when the MX has not
+         * verified.
          */
         fun emailReceivingEnabled(emailReceivingEnabled: Boolean) = apply {
             body.emailReceivingEnabled(emailReceivingEnabled)
@@ -742,8 +745,10 @@ private constructor(
         fun emailFromName(): String? = emailFromName.getNullable("emailFromName")
 
         /**
-         * Enable inbound email receiving on this sender. Requires a verified MX record on the
-         * domain; ignored otherwise.
+         * Enable inbound email receiving on this sender. Requires a verified inbound MX record on
+         * the domain; the request is ignored otherwise. Read `emailReceivingEnabled` back off the
+         * response to see whether it was applied — it comes back `false` when the MX has not
+         * verified.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -1058,8 +1063,10 @@ private constructor(
             }
 
             /**
-             * Enable inbound email receiving on this sender. Requires a verified MX record on the
-             * domain; ignored otherwise.
+             * Enable inbound email receiving on this sender. Requires a verified inbound MX record
+             * on the domain; the request is ignored otherwise. Read `emailReceivingEnabled` back
+             * off the response to see whether it was applied — it comes back `false` when the MX
+             * has not verified.
              */
             fun emailReceivingEnabled(emailReceivingEnabled: Boolean) =
                 emailReceivingEnabled(JsonField.of(emailReceivingEnabled))
