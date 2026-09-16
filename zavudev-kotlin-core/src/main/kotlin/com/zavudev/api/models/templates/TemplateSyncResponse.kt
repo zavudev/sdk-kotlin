@@ -84,7 +84,8 @@ private constructor(
     fun skipped(): Long = skipped.getRequired("skipped")
 
     /**
-     * Templates whose approval status changed to match Meta.
+     * Templates brought back in line with Meta — approval status, category, or both. A template
+     * whose status and category both moved is counted once.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
@@ -268,7 +269,10 @@ private constructor(
          */
         fun skipped(skipped: JsonField<Long>) = apply { this.skipped = skipped }
 
-        /** Templates whose approval status changed to match Meta. */
+        /**
+         * Templates brought back in line with Meta — approval status, category, or both. A template
+         * whose status and category both moved is counted once.
+         */
         fun updated(updated: Long) = updated(JsonField.of(updated))
 
         /**
