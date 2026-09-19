@@ -37,7 +37,9 @@ private constructor(
     fun name(): String? = body.name()
 
     /**
-     * Sender ID to assign the phone number to. Set to null to unassign.
+     * Sender ID to assign the phone number to. Set to null to unassign. A number under regulatory
+     * review is recorded now and connected to the sender when approved; a rejected number is
+     * refused.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -114,7 +116,11 @@ private constructor(
          */
         fun name(name: JsonField<String>) = apply { body.name(name) }
 
-        /** Sender ID to assign the phone number to. Set to null to unassign. */
+        /**
+         * Sender ID to assign the phone number to. Set to null to unassign. A number under
+         * regulatory review is recorded now and connected to the sender when approved; a rejected
+         * number is refused.
+         */
         fun senderId(senderId: String?) = apply { body.senderId(senderId) }
 
         /**
@@ -291,7 +297,9 @@ private constructor(
         fun name(): String? = name.getNullable("name")
 
         /**
-         * Sender ID to assign the phone number to. Set to null to unassign.
+         * Sender ID to assign the phone number to. Set to null to unassign. A number under
+         * regulatory review is recorded now and connected to the sender when approved; a rejected
+         * number is refused.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -355,7 +363,11 @@ private constructor(
              */
             fun name(name: JsonField<String>) = apply { this.name = name }
 
-            /** Sender ID to assign the phone number to. Set to null to unassign. */
+            /**
+             * Sender ID to assign the phone number to. Set to null to unassign. A number under
+             * regulatory review is recorded now and connected to the sender when approved; a
+             * rejected number is refused.
+             */
             fun senderId(senderId: String?) = senderId(JsonField.ofNullable(senderId))
 
             /**

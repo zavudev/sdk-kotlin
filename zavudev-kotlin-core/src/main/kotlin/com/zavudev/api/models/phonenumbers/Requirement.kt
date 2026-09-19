@@ -17,7 +17,11 @@ import com.zavudev.api.errors.ZavudevInvalidDataException
 import java.util.Collections
 import java.util.Objects
 
-/** A group of requirements for a specific country/phone type combination. */
+/**
+ * The requirements for ordering a number: for a country and number type, or for one specific number
+ * when requested with `phoneNumber` (then `id` is that phone number and `countryCode` is taken from
+ * it).
+ */
 class Requirement
 @JsonCreator(mode = JsonCreator.Mode.DISABLED)
 private constructor(
