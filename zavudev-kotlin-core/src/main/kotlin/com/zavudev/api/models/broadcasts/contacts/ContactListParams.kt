@@ -25,7 +25,18 @@ private constructor(
 
     fun limit(): Long? = limit
 
-    /** Status of a contact within a broadcast. */
+    /**
+     * Status of a contact within a broadcast.
+     * - `pending`, `queued`, `sending`: not handed to the provider yet.
+     * - `sent`: accepted by the provider; delivery is not confirmed yet. Channels that never report
+     *   delivery leave the recipient here.
+     * - `delivered`: the channel confirmed delivery to the device. A WhatsApp read receipt also
+     *   counts as delivered.
+     * - `failed`: not delivered. A recipient can move from `sent` or `delivered` to `failed` when
+     *   the provider reports a failure late.
+     * - `skipped`: not sent, because the recipient opted out of the channel or the broadcast was
+     *   cancelled before reaching it.
+     */
     fun status(): BroadcastContactStatus? = status
 
     /** Additional headers to send with the request. */
@@ -76,7 +87,18 @@ private constructor(
          */
         fun limit(limit: Long) = limit(limit as Long?)
 
-        /** Status of a contact within a broadcast. */
+        /**
+         * Status of a contact within a broadcast.
+         * - `pending`, `queued`, `sending`: not handed to the provider yet.
+         * - `sent`: accepted by the provider; delivery is not confirmed yet. Channels that never
+         *   report delivery leave the recipient here.
+         * - `delivered`: the channel confirmed delivery to the device. A WhatsApp read receipt also
+         *   counts as delivered.
+         * - `failed`: not delivered. A recipient can move from `sent` or `delivered` to `failed`
+         *   when the provider reports a failure late.
+         * - `skipped`: not sent, because the recipient opted out of the channel or the broadcast
+         *   was cancelled before reaching it.
+         */
         fun status(status: BroadcastContactStatus?) = apply { this.status = status }
 
         fun additionalHeaders(additionalHeaders: Headers) = apply {
