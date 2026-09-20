@@ -75,9 +75,7 @@ private constructor(
     /**
      * Enable the one-way SMS channel (`sms_oneway`). Needs nothing else — no phone number, no
      * credential — so it is the fastest way to get a sender that can send. Recipients cannot reply.
-     * Confirm with `sms_oneway` in the `channels` array on the response. Turning the channel on
-     * needs nothing, but SENDING on it requires an approved business verification (KYB): without
-     * one every send is refused with `403 kyb_required`.
+     * Confirm with `sms_oneway` in the `channels` array on the response.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -365,9 +363,7 @@ private constructor(
         /**
          * Enable the one-way SMS channel (`sms_oneway`). Needs nothing else — no phone number, no
          * credential — so it is the fastest way to get a sender that can send. Recipients cannot
-         * reply. Confirm with `sms_oneway` in the `channels` array on the response. Turning the
-         * channel on needs nothing, but SENDING on it requires an approved business verification
-         * (KYB): without one every send is refused with `403 kyb_required`.
+         * reply. Confirm with `sms_oneway` in the `channels` array on the response.
          */
         fun enableSmsOneway(enableSmsOneway: Boolean) = apply {
             body.enableSmsOneway(enableSmsOneway)
@@ -643,8 +639,7 @@ private constructor(
     /**
      * Create a sender. Provide `phoneNumber` for an SMS/WhatsApp sender, `emailAddress` (with a
      * verified email domain) for an email sender, or `enableSmsOneway: true` for a zero-setup
-     * one-way SMS sender — at least one is required. One-way SMS is the only channel whose sends
-     * require an approved business verification (KYB); the sender is created either way.
+     * one-way SMS sender — at least one is required.
      */
     class Body
     @JsonCreator(mode = JsonCreator.Mode.DISABLED)
@@ -764,9 +759,7 @@ private constructor(
         /**
          * Enable the one-way SMS channel (`sms_oneway`). Needs nothing else — no phone number, no
          * credential — so it is the fastest way to get a sender that can send. Recipients cannot
-         * reply. Confirm with `sms_oneway` in the `channels` array on the response. Turning the
-         * channel on needs nothing, but SENDING on it requires an approved business verification
-         * (KYB): without one every send is refused with `403 kyb_required`.
+         * reply. Confirm with `sms_oneway` in the `channels` array on the response.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -1093,8 +1086,6 @@ private constructor(
              * Enable the one-way SMS channel (`sms_oneway`). Needs nothing else — no phone number,
              * no credential — so it is the fastest way to get a sender that can send. Recipients
              * cannot reply. Confirm with `sms_oneway` in the `channels` array on the response.
-             * Turning the channel on needs nothing, but SENDING on it requires an approved business
-             * verification (KYB): without one every send is refused with `403 kyb_required`.
              */
             fun enableSmsOneway(enableSmsOneway: Boolean) =
                 enableSmsOneway(JsonField.of(enableSmsOneway))
