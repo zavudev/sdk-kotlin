@@ -9,7 +9,11 @@ import com.zavudev.api.core.http.QueryParams
 import com.zavudev.api.core.toImmutable
 import java.util.Objects
 
-/** Delete a regulatory address. Cannot delete addresses that are in use. */
+/**
+ * Delete a regulatory address from this project. Any address can be deleted, whatever its status.
+ * Phone numbers already purchased with it are not affected, and neither is information already
+ * submitted for later purchases in its country.
+ */
 class AddressDeleteParams
 private constructor(
     private val addressId: String?,

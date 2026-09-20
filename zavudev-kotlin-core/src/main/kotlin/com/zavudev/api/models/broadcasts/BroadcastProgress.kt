@@ -32,6 +32,7 @@ private constructor(
     private val estimatedCompletionAt: JsonField<OffsetDateTime>,
     private val estimatedCost: JsonField<Double>,
     private val reservedAmount: JsonField<Double>,
+    private val sent: JsonField<Long>,
     private val startedAt: JsonField<OffsetDateTime>,
     private val additionalProperties: MutableMap<String, JsonValue>,
 ) {
@@ -65,6 +66,7 @@ private constructor(
         @JsonProperty("reservedAmount")
         @ExcludeMissing
         reservedAmount: JsonField<Double> = JsonMissing.of(),
+        @JsonProperty("sent") @ExcludeMissing sent: JsonField<Long> = JsonMissing.of(),
         @JsonProperty("startedAt")
         @ExcludeMissing
         startedAt: JsonField<OffsetDateTime> = JsonMissing.of(),
@@ -82,6 +84,7 @@ private constructor(
         estimatedCompletionAt,
         estimatedCost,
         reservedAmount,
+        sent,
         startedAt,
         mutableMapOf(),
     )
@@ -93,7 +96,7 @@ private constructor(
     fun broadcastId(): String = broadcastId.getRequired("broadcastId")
 
     /**
-     * Successfully delivered.
+     * Confirmed delivered to the device.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
@@ -186,6 +189,14 @@ private constructor(
      *   server responded with an unexpected value).
      */
     fun reservedAmount(): Double? = reservedAmount.getNullable("reservedAmount")
+
+    /**
+     * Accepted by the provider, delivery not confirmed yet.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun sent(): Long? = sent.getNullable("sent")
 
     /**
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
@@ -294,6 +305,13 @@ private constructor(
     fun _reservedAmount(): JsonField<Double> = reservedAmount
 
     /**
+     * Returns the raw JSON value of [sent].
+     *
+     * Unlike [sent], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    @JsonProperty("sent") @ExcludeMissing fun _sent(): JsonField<Long> = sent
+
+    /**
      * Returns the raw JSON value of [startedAt].
      *
      * Unlike [startedAt], this method doesn't throw if the JSON field has an unexpected type.
@@ -351,6 +369,7 @@ private constructor(
         private var estimatedCompletionAt: JsonField<OffsetDateTime> = JsonMissing.of()
         private var estimatedCost: JsonField<Double> = JsonMissing.of()
         private var reservedAmount: JsonField<Double> = JsonMissing.of()
+        private var sent: JsonField<Long> = JsonMissing.of()
         private var startedAt: JsonField<OffsetDateTime> = JsonMissing.of()
         private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
 
@@ -368,6 +387,7 @@ private constructor(
             estimatedCompletionAt = broadcastProgress.estimatedCompletionAt
             estimatedCost = broadcastProgress.estimatedCost
             reservedAmount = broadcastProgress.reservedAmount
+            sent = broadcastProgress.sent
             startedAt = broadcastProgress.startedAt
             additionalProperties = broadcastProgress.additionalProperties.toMutableMap()
         }
@@ -383,7 +403,7 @@ private constructor(
          */
         fun broadcastId(broadcastId: JsonField<String>) = apply { this.broadcastId = broadcastId }
 
-        /** Successfully delivered. */
+        /** Confirmed delivered to the device. */
         fun delivered(delivered: Long) = delivered(JsonField.of(delivered))
 
         /**
@@ -553,6 +573,17 @@ private constructor(
             this.reservedAmount = reservedAmount
         }
 
+        /** Accepted by the provider, delivery not confirmed yet. */
+        fun sent(sent: Long) = sent(JsonField.of(sent))
+
+        /**
+         * Sets [Builder.sent] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.sent] with a well-typed [Long] value instead. This
+         * method is primarily for setting the field to an undocumented or not yet supported value.
+         */
+        fun sent(sent: JsonField<Long>) = apply { this.sent = sent }
+
         fun startedAt(startedAt: OffsetDateTime) = startedAt(JsonField.of(startedAt))
 
         /**
@@ -618,6 +649,7 @@ private constructor(
                 estimatedCompletionAt,
                 estimatedCost,
                 reservedAmount,
+                sent,
                 startedAt,
                 additionalProperties.toMutableMap(),
             )
@@ -651,6 +683,7 @@ private constructor(
         estimatedCompletionAt()
         estimatedCost()
         reservedAmount()
+        sent()
         startedAt()
         validated = true
     }
@@ -682,6 +715,7 @@ private constructor(
             (if (estimatedCompletionAt.asKnown() == null) 0 else 1) +
             (if (estimatedCost.asKnown() == null) 0 else 1) +
             (if (reservedAmount.asKnown() == null) 0 else 1) +
+            (if (sent.asKnown() == null) 0 else 1) +
             (if (startedAt.asKnown() == null) 0 else 1)
 
     override fun equals(other: Any?): Boolean {
@@ -703,6 +737,7 @@ private constructor(
             estimatedCompletionAt == other.estimatedCompletionAt &&
             estimatedCost == other.estimatedCost &&
             reservedAmount == other.reservedAmount &&
+            sent == other.sent &&
             startedAt == other.startedAt &&
             additionalProperties == other.additionalProperties
     }
@@ -722,6 +757,7 @@ private constructor(
             estimatedCompletionAt,
             estimatedCost,
             reservedAmount,
+            sent,
             startedAt,
             additionalProperties,
         )
@@ -730,5 +766,5 @@ private constructor(
     override fun hashCode(): Int = hashCode
 
     override fun toString() =
-        "BroadcastProgress{broadcastId=$broadcastId, delivered=$delivered, failed=$failed, pending=$pending, percentComplete=$percentComplete, sending=$sending, skipped=$skipped, status=$status, total=$total, actualCost=$actualCost, estimatedCompletionAt=$estimatedCompletionAt, estimatedCost=$estimatedCost, reservedAmount=$reservedAmount, startedAt=$startedAt, additionalProperties=$additionalProperties}"
+        "BroadcastProgress{broadcastId=$broadcastId, delivered=$delivered, failed=$failed, pending=$pending, percentComplete=$percentComplete, sending=$sending, skipped=$skipped, status=$status, total=$total, actualCost=$actualCost, estimatedCompletionAt=$estimatedCompletionAt, estimatedCost=$estimatedCost, reservedAmount=$reservedAmount, sent=$sent, startedAt=$startedAt, additionalProperties=$additionalProperties}"
 }

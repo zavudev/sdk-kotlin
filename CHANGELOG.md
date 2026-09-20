@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0 (2026-09-20)
+
+Full Changelog: [v0.1.0...v0.2.0](https://github.com/zavudev/sdk-kotlin/compare/v0.1.0...v0.2.0)
+
+### Features
+
+* **api:** api update ([5fcbb5e](https://github.com/zavudev/sdk-kotlin/commit/5fcbb5e3446017490627e1ddcf86db21df079704))
+* **api:** api update ([0ac25f5](https://github.com/zavudev/sdk-kotlin/commit/0ac25f5bb52e6eb4974403d41cacce5ce4d2d217))
+* **api:** api update ([8d8c316](https://github.com/zavudev/sdk-kotlin/commit/8d8c3165ad304ca012fafb70759701f258b47020))
+* **api:** api update ([722267c](https://github.com/zavudev/sdk-kotlin/commit/722267c3127d06bc983732fc8d5407770a43e758))
+* **api:** api update ([b85b942](https://github.com/zavudev/sdk-kotlin/commit/b85b942a246fcdee8df76f3b99668356db466b57))
+* **api:** api update ([e8406f0](https://github.com/zavudev/sdk-kotlin/commit/e8406f09b22c7b03bc6b274889df0b0c64f00df3))
+* **api:** api update ([b67fbee](https://github.com/zavudev/sdk-kotlin/commit/b67fbeec9a8d1fd08837ba6ea5a9d5f15a233ab2))
+* **api:** api update ([c937016](https://github.com/zavudev/sdk-kotlin/commit/c9370166b0a72f378d8e7d23e30f16401ebba2d0))
+* **api:** api update ([4f0ea2d](https://github.com/zavudev/sdk-kotlin/commit/4f0ea2d457c0d28b9ab55e8bd5eb86a24cf88dec))
+* **api:** api update ([f06427e](https://github.com/zavudev/sdk-kotlin/commit/f06427e3e439a937d687130f00a71f88905c8ade))
+* **api:** api update ([bf4612f](https://github.com/zavudev/sdk-kotlin/commit/bf4612fb96a510e5d92aa468b2d3735a7875d96e))
+
 ## 0.1.0 (2026-09-08)
 
 Full Changelog: [v0.0.1...v0.1.0](https://github.com/zavudev/sdk-kotlin/compare/v0.0.1...v0.1.0)

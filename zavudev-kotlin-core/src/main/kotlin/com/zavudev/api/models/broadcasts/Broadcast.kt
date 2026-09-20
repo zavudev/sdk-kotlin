@@ -43,6 +43,7 @@ private constructor(
     private val scheduledAt: JsonField<OffsetDateTime>,
     private val senderId: JsonField<String>,
     private val sendingCount: JsonField<Long>,
+    private val sentCount: JsonField<Long>,
     private val startedAt: JsonField<OffsetDateTime>,
     private val text: JsonField<String>,
     private val updatedAt: JsonField<OffsetDateTime>,
@@ -109,6 +110,7 @@ private constructor(
         @JsonProperty("sendingCount")
         @ExcludeMissing
         sendingCount: JsonField<Long> = JsonMissing.of(),
+        @JsonProperty("sentCount") @ExcludeMissing sentCount: JsonField<Long> = JsonMissing.of(),
         @JsonProperty("startedAt")
         @ExcludeMissing
         startedAt: JsonField<OffsetDateTime> = JsonMissing.of(),
@@ -139,6 +141,7 @@ private constructor(
         scheduledAt,
         senderId,
         sendingCount,
+        sentCount,
         startedAt,
         text,
         updatedAt,
@@ -218,6 +221,8 @@ private constructor(
     fun content(): BroadcastContent? = content.getNullable("content")
 
     /**
+     * Recipients with confirmed delivery to the device.
+     *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
      */
@@ -296,6 +301,15 @@ private constructor(
      *   server responded with an unexpected value).
      */
     fun sendingCount(): Long? = sendingCount.getNullable("sendingCount")
+
+    /**
+     * Recipients whose message the provider accepted, without a confirmed delivery yet. Channels
+     * that never report delivery keep their recipients here.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun sentCount(): Long? = sentCount.getNullable("sentCount")
 
     /**
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
@@ -496,6 +510,13 @@ private constructor(
     fun _sendingCount(): JsonField<Long> = sendingCount
 
     /**
+     * Returns the raw JSON value of [sentCount].
+     *
+     * Unlike [sentCount], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    @JsonProperty("sentCount") @ExcludeMissing fun _sentCount(): JsonField<Long> = sentCount
+
+    /**
      * Returns the raw JSON value of [startedAt].
      *
      * Unlike [startedAt], this method doesn't throw if the JSON field has an unexpected type.
@@ -576,6 +597,7 @@ private constructor(
         private var scheduledAt: JsonField<OffsetDateTime> = JsonMissing.of()
         private var senderId: JsonField<String> = JsonMissing.of()
         private var sendingCount: JsonField<Long> = JsonMissing.of()
+        private var sentCount: JsonField<Long> = JsonMissing.of()
         private var startedAt: JsonField<OffsetDateTime> = JsonMissing.of()
         private var text: JsonField<String> = JsonMissing.of()
         private var updatedAt: JsonField<OffsetDateTime> = JsonMissing.of()
@@ -604,6 +626,7 @@ private constructor(
             scheduledAt = broadcast.scheduledAt
             senderId = broadcast.senderId
             sendingCount = broadcast.sendingCount
+            sentCount = broadcast.sentCount
             startedAt = broadcast.startedAt
             text = broadcast.text
             updatedAt = broadcast.updatedAt
@@ -737,6 +760,7 @@ private constructor(
          */
         fun content(content: JsonField<BroadcastContent>) = apply { this.content = content }
 
+        /** Recipients with confirmed delivery to the device. */
         fun deliveredCount(deliveredCount: Long) = deliveredCount(JsonField.of(deliveredCount))
 
         /**
@@ -911,6 +935,20 @@ private constructor(
          */
         fun sendingCount(sendingCount: JsonField<Long>) = apply { this.sendingCount = sendingCount }
 
+        /**
+         * Recipients whose message the provider accepted, without a confirmed delivery yet.
+         * Channels that never report delivery keep their recipients here.
+         */
+        fun sentCount(sentCount: Long) = sentCount(JsonField.of(sentCount))
+
+        /**
+         * Sets [Builder.sentCount] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.sentCount] with a well-typed [Long] value instead. This
+         * method is primarily for setting the field to an undocumented or not yet supported value.
+         */
+        fun sentCount(sentCount: JsonField<Long>) = apply { this.sentCount = sentCount }
+
         fun startedAt(startedAt: OffsetDateTime) = startedAt(JsonField.of(startedAt))
 
         /**
@@ -1004,6 +1042,7 @@ private constructor(
                 scheduledAt,
                 senderId,
                 sendingCount,
+                sentCount,
                 startedAt,
                 text,
                 updatedAt,
@@ -1048,6 +1087,7 @@ private constructor(
         scheduledAt()
         senderId()
         sendingCount()
+        sentCount()
         startedAt()
         text()
         updatedAt()
@@ -1090,6 +1130,7 @@ private constructor(
             (if (scheduledAt.asKnown() == null) 0 else 1) +
             (if (senderId.asKnown() == null) 0 else 1) +
             (if (sendingCount.asKnown() == null) 0 else 1) +
+            (if (sentCount.asKnown() == null) 0 else 1) +
             (if (startedAt.asKnown() == null) 0 else 1) +
             (if (text.asKnown() == null) 0 else 1) +
             (if (updatedAt.asKnown() == null) 0 else 1)
@@ -1575,6 +1616,7 @@ private constructor(
             scheduledAt == other.scheduledAt &&
             senderId == other.senderId &&
             sendingCount == other.sendingCount &&
+            sentCount == other.sentCount &&
             startedAt == other.startedAt &&
             text == other.text &&
             updatedAt == other.updatedAt &&
@@ -1605,6 +1647,7 @@ private constructor(
             scheduledAt,
             senderId,
             sendingCount,
+            sentCount,
             startedAt,
             text,
             updatedAt,
@@ -1615,5 +1658,5 @@ private constructor(
     override fun hashCode(): Int = hashCode
 
     override fun toString() =
-        "Broadcast{id=$id, channel=$channel, createdAt=$createdAt, messageType=$messageType, name=$name, status=$status, totalContacts=$totalContacts, actualCost=$actualCost, completedAt=$completedAt, content=$content, deliveredCount=$deliveredCount, emailSubject=$emailSubject, estimatedCost=$estimatedCost, failedCount=$failedCount, metadata=$metadata, pendingCount=$pendingCount, reservedAmount=$reservedAmount, reviewAttempts=$reviewAttempts, reviewResult=$reviewResult, scheduledAt=$scheduledAt, senderId=$senderId, sendingCount=$sendingCount, startedAt=$startedAt, text=$text, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
+        "Broadcast{id=$id, channel=$channel, createdAt=$createdAt, messageType=$messageType, name=$name, status=$status, totalContacts=$totalContacts, actualCost=$actualCost, completedAt=$completedAt, content=$content, deliveredCount=$deliveredCount, emailSubject=$emailSubject, estimatedCost=$estimatedCost, failedCount=$failedCount, metadata=$metadata, pendingCount=$pendingCount, reservedAmount=$reservedAmount, reviewAttempts=$reviewAttempts, reviewResult=$reviewResult, scheduledAt=$scheduledAt, senderId=$senderId, sendingCount=$sendingCount, sentCount=$sentCount, startedAt=$startedAt, text=$text, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
 }

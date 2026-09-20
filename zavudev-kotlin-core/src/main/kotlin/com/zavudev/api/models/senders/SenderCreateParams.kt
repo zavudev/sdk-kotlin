@@ -63,8 +63,9 @@ private constructor(
     fun emailFromName(): String? = body.emailFromName()
 
     /**
-     * Enable inbound email receiving on this sender. Requires a verified MX record on the domain;
-     * ignored otherwise.
+     * Enable inbound email receiving on this sender. Requires a verified inbound MX record on the
+     * domain; the request is ignored otherwise. Read `emailReceivingEnabled` back off the response
+     * to see whether it was applied — it comes back `false` when the MX has not verified.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -93,9 +94,10 @@ private constructor(
     /**
      * Phone number in E.164 format, and it must be a number your project already owns (see `GET
      * /v1/phone-numbers`). The number is routed to the sender as part of this call, which is what
-     * turns the SMS channel on. Passing a number the project does not own, or one already attached
-     * to another sender, returns 400 rather than creating a sender that cannot send. Omit for an
-     * email-only sender.
+     * turns the SMS channel on. Passing a number the project does not own, one already attached to
+     * another sender, or one rejected in regulatory review returns 400 rather than creating a
+     * sender that cannot send. A number still under review is attached and starts carrying messages
+     * when it is approved. Omit for an email-only sender.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -338,8 +340,10 @@ private constructor(
         }
 
         /**
-         * Enable inbound email receiving on this sender. Requires a verified MX record on the
-         * domain; ignored otherwise.
+         * Enable inbound email receiving on this sender. Requires a verified inbound MX record on
+         * the domain; the request is ignored otherwise. Read `emailReceivingEnabled` back off the
+         * response to see whether it was applied — it comes back `false` when the MX has not
+         * verified.
          */
         fun emailReceivingEnabled(emailReceivingEnabled: Boolean) = apply {
             body.emailReceivingEnabled(emailReceivingEnabled)
@@ -394,9 +398,10 @@ private constructor(
         /**
          * Phone number in E.164 format, and it must be a number your project already owns (see `GET
          * /v1/phone-numbers`). The number is routed to the sender as part of this call, which is
-         * what turns the SMS channel on. Passing a number the project does not own, or one already
-         * attached to another sender, returns 400 rather than creating a sender that cannot send.
-         * Omit for an email-only sender.
+         * what turns the SMS channel on. Passing a number the project does not own, one already
+         * attached to another sender, or one rejected in regulatory review returns 400 rather than
+         * creating a sender that cannot send. A number still under review is attached and starts
+         * carrying messages when it is approved. Omit for an email-only sender.
          */
         fun phoneNumber(phoneNumber: String) = apply { body.phoneNumber(phoneNumber) }
 
@@ -740,8 +745,10 @@ private constructor(
         fun emailFromName(): String? = emailFromName.getNullable("emailFromName")
 
         /**
-         * Enable inbound email receiving on this sender. Requires a verified MX record on the
-         * domain; ignored otherwise.
+         * Enable inbound email receiving on this sender. Requires a verified inbound MX record on
+         * the domain; the request is ignored otherwise. Read `emailReceivingEnabled` back off the
+         * response to see whether it was applied — it comes back `false` when the MX has not
+         * verified.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -771,9 +778,10 @@ private constructor(
         /**
          * Phone number in E.164 format, and it must be a number your project already owns (see `GET
          * /v1/phone-numbers`). The number is routed to the sender as part of this call, which is
-         * what turns the SMS channel on. Passing a number the project does not own, or one already
-         * attached to another sender, returns 400 rather than creating a sender that cannot send.
-         * Omit for an email-only sender.
+         * what turns the SMS channel on. Passing a number the project does not own, one already
+         * attached to another sender, or one rejected in regulatory review returns 400 rather than
+         * creating a sender that cannot send. A number still under review is attached and starts
+         * carrying messages when it is approved. Omit for an email-only sender.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -1055,8 +1063,10 @@ private constructor(
             }
 
             /**
-             * Enable inbound email receiving on this sender. Requires a verified MX record on the
-             * domain; ignored otherwise.
+             * Enable inbound email receiving on this sender. Requires a verified inbound MX record
+             * on the domain; the request is ignored otherwise. Read `emailReceivingEnabled` back
+             * off the response to see whether it was applied — it comes back `false` when the MX
+             * has not verified.
              */
             fun emailReceivingEnabled(emailReceivingEnabled: Boolean) =
                 emailReceivingEnabled(JsonField.of(emailReceivingEnabled))
@@ -1112,9 +1122,11 @@ private constructor(
             /**
              * Phone number in E.164 format, and it must be a number your project already owns (see
              * `GET /v1/phone-numbers`). The number is routed to the sender as part of this call,
-             * which is what turns the SMS channel on. Passing a number the project does not own, or
-             * one already attached to another sender, returns 400 rather than creating a sender
-             * that cannot send. Omit for an email-only sender.
+             * which is what turns the SMS channel on. Passing a number the project does not own,
+             * one already attached to another sender, or one rejected in regulatory review returns
+             * 400 rather than creating a sender that cannot send. A number still under review is
+             * attached and starts carrying messages when it is approved. Omit for an email-only
+             * sender.
              */
             fun phoneNumber(phoneNumber: String) = phoneNumber(JsonField.of(phoneNumber))
 

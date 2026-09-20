@@ -9,7 +9,17 @@ internal class PhoneNumberPurchaseParamsTest {
 
     @Test
     fun create() {
-        PhoneNumberPurchaseParams.builder().phoneNumber("+15551234567").name("Primary Line").build()
+        PhoneNumberPurchaseParams.builder()
+            .phoneNumber("+15551234567")
+            .name("Primary Line")
+            .addRegulatoryRequirement(
+                PhoneNumberPurchaseParams.RegulatoryRequirement.builder()
+                    .fieldValue("jd7x2k3m4n5p6q7r8s9t0abc")
+                    .requirementType("8c5b1a2e-0f3d-4f5b-9a61-2c7e4d9b1f10")
+                    .build()
+            )
+            .type(PhoneNumberType.LOCAL)
+            .build()
     }
 
     @Test
@@ -18,12 +28,27 @@ internal class PhoneNumberPurchaseParamsTest {
             PhoneNumberPurchaseParams.builder()
                 .phoneNumber("+15551234567")
                 .name("Primary Line")
+                .addRegulatoryRequirement(
+                    PhoneNumberPurchaseParams.RegulatoryRequirement.builder()
+                        .fieldValue("jd7x2k3m4n5p6q7r8s9t0abc")
+                        .requirementType("8c5b1a2e-0f3d-4f5b-9a61-2c7e4d9b1f10")
+                        .build()
+                )
+                .type(PhoneNumberType.LOCAL)
                 .build()
 
         val body = params._body()
 
         assertThat(body.phoneNumber()).isEqualTo("+15551234567")
         assertThat(body.name()).isEqualTo("Primary Line")
+        assertThat(body.regulatoryRequirements())
+            .containsExactly(
+                PhoneNumberPurchaseParams.RegulatoryRequirement.builder()
+                    .fieldValue("jd7x2k3m4n5p6q7r8s9t0abc")
+                    .requirementType("8c5b1a2e-0f3d-4f5b-9a61-2c7e4d9b1f10")
+                    .build()
+            )
+        assertThat(body.type()).isEqualTo(PhoneNumberType.LOCAL)
     }
 
     @Test
